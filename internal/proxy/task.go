@@ -88,6 +88,8 @@ const (
 	CreateAliasTaskName             = "CreateAliasTask"
 	DropAliasTaskName               = "DropAliasTask"
 	AlterAliasTaskName              = "AlterAliasTask"
+	CreateFunctionTaskName          = "CreateFunctionTask"
+	DropFunctionTaskName            = "DropFunctionTask"
 
 	// minFloat32 minimum float.
 	minFloat32 = -1 * float32(math.MaxFloat32)
@@ -2728,5 +2730,127 @@ func (a *AlterAliasTask) Execute(ctx context.Context) error {
 }
 
 func (a *AlterAliasTask) PostExecute(ctx context.Context) error {
+	return nil
+}
+
+// CreateFunctionTask contains task information of CreateFunction
+type CreateFunctionTask struct {
+	Condition
+	*milvuspb.CreateFunctionRequest
+	ctx       context.Context
+	rootCoord types.RootCoord
+	result    *commonpb.Status
+}
+
+func (c *CreateFunctionTask) TraceCtx() context.Context {
+	return c.ctx
+}
+
+func (c *CreateFunctionTask) ID() UniqueID {
+	return c.Base.MsgID
+}
+
+func (c *CreateFunctionTask) SetID(uid UniqueID) {
+	c.Base.MsgID = uid
+}
+
+func (c *CreateFunctionTask) Name() string {
+	return CreateFunctionTaskName
+}
+
+func (c *CreateFunctionTask) Type() commonpb.MsgType {
+	return c.Base.MsgType
+}
+
+func (c *CreateFunctionTask) BeginTs() Timestamp {
+	return c.Base.Timestamp
+}
+
+func (c *CreateFunctionTask) EndTs() Timestamp {
+	return c.Base.Timestamp
+}
+
+func (c *CreateFunctionTask) SetTs(ts Timestamp) {
+	c.Base.Timestamp = ts
+}
+
+func (c *CreateFunctionTask) OnEnqueue() error {
+	c.Base = &commonpb.MsgBase{}
+	return nil
+}
+
+func (c *CreateFunctionTask) PreExecute(ctx context.Context) error {
+	//TODO implement me
+	return nil
+}
+
+func (c *CreateFunctionTask) Execute(ctx context.Context) error {
+	var err error
+	c.result, err = c.rootCoord.CreateFunction(ctx, c.CreateFunctionRequest)
+	return err
+}
+
+func (c *CreateFunctionTask) PostExecute(ctx context.Context) error {
+	//TODO implement me
+	return nil
+}
+
+type DropFunctionTask struct {
+	Condition
+	*milvuspb.DropFunctionRequest
+	ctx       context.Context
+	rootCoord types.RootCoord
+	result    *commonpb.Status
+}
+
+func (d *DropFunctionTask) TraceCtx() context.Context {
+	return d.ctx
+}
+
+func (d *DropFunctionTask) ID() UniqueID {
+	return d.Base.MsgID
+}
+
+func (d *DropFunctionTask) SetID(uid UniqueID) {
+	d.Base.MsgID = uid
+}
+
+func (d *DropFunctionTask) Name() string {
+	return DropAliasTaskName
+}
+
+func (d *DropFunctionTask) Type() commonpb.MsgType {
+	return d.Base.MsgType
+}
+
+func (d *DropFunctionTask) BeginTs() Timestamp {
+	return d.Base.Timestamp
+}
+
+func (d *DropFunctionTask) EndTs() Timestamp {
+	return d.Base.Timestamp
+}
+
+func (d *DropFunctionTask) SetTs(ts Timestamp) {
+	d.Base.Timestamp = ts
+}
+
+func (d *DropFunctionTask) OnEnqueue() error {
+	d.Base = &commonpb.MsgBase{}
+	return nil
+}
+
+func (d *DropFunctionTask) PreExecute(ctx context.Context) error {
+	//TODO implement me
+	return nil
+}
+
+func (d *DropFunctionTask) Execute(ctx context.Context) error {
+	var err error
+	d.result, err = d.rootCoord.DropFunction(ctx, d.DropFunctionRequest)
+	return err
+}
+
+func (d *DropFunctionTask) PostExecute(ctx context.Context) error {
 	return nil
 }
