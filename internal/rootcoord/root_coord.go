@@ -2939,3 +2939,70 @@ func (c *Core) ListPolicy(ctx context.Context, in *internalpb.ListPolicyRequest)
 		UserRoles:   userRoles,
 	}, nil
 }
+
+// CreateFunction create collection alias
+func (c *Core) CreateFunction(ctx context.Context, in *milvuspb.CreateFunctionRequest) (*commonpb.Status, error) {
+	//TODO implement CreateFunction
+	metrics.RootCoordDDLReqCounter.WithLabelValues("CreateFunction", metrics.TotalLabel).Inc()
+	if code, ok := c.checkHealthy(); !ok {
+		return failStatus(commonpb.ErrorCode_UnexpectedError, "StateCode="+internalpb.StateCode_name[int32(code)]), nil
+	}
+	tr := timerecord.NewTimeRecorder("CreateFunction")
+	log.Debug("CreateAlias", zap.String("role", typeutil.RootCoordRole),
+		zap.String("function name", in.FunctionName), zap.Binary("wasm binary file", in.WasmBinaryFile),
+		zap.Int64("msgID", in.Base.MsgID))
+	t := &CreateFunctionReqTask{
+		baseReqTask: baseReqTask{
+			ctx:  ctx,
+			core: c,
+		},
+		Req: in,
+	}
+	err := executeTask(t)
+	if err != nil {
+		log.Error("CreateFunction failed", zap.String("role", typeutil.RootCoordRole),
+			zap.String("function name", in.FunctionName), zap.Binary("wasm binary file", in.WasmBinaryFile),
+			zap.Int64("msgID", in.Base.MsgID))
+		metrics.RootCoordDDLReqCounter.WithLabelValues("CreateFunction", metrics.FailLabel).Inc()
+		return failStatus(commonpb.ErrorCode_UnexpectedError, "CreateFunction failed: "+err.Error()), nil
+	}
+	log.Debug("CreateFunction success", zap.String("role", typeutil.RootCoordRole),
+		zap.String("function name", in.FunctionName), zap.Binary("wasm binary file", in.WasmBinaryFile),
+		zap.Int64("msgID", in.Base.MsgID))
+
+	metrics.RootCoordDDLReqCounter.WithLabelValues("CreateFunction", metrics.SuccessLabel).Inc()
+	metrics.RootCoordDDLReqLatency.WithLabelValues("CreateFunction").Observe(float64(tr.ElapseSpan().Milliseconds()))
+	return succStatus(), nil
+}
+
+// DropAlias drop collection alias
+func (c *Core) DropFunction(ctx context.Context, in *milvuspb.DropFunctionRequest) (*commonpb.Status, error) {
+	metrics.RootCoordDDLReqCounter.WithLabelValues("DropFunction", metrics.TotalLabel).Inc()
+	if code, ok := c.checkHealthy(); !ok {
+		return failStatus(commonpb.ErrorCode_UnexpectedError, "StateCode="+internalpb.StateCode_name[int32(code)]), nil
+	}
+	tr := timerecord.NewTimeRecorder("DropFunction")
+	log.Debug("DropFunction", zap.String("role", typeutil.RootCoordRole),
+		zap.String("function name", in.FunctionName), zap.Int64("msgID", in.Base.MsgID))
+	//TODO implement CreateFunction
+	t := &DropFunctionReqTask{
+		baseReqTask: baseReqTask{
+			ctx:  ctx,
+			core: c,
+		},
+		Req: in,
+	}
+	err := executeTask(t)
+	if err != nil {
+		log.Error("DropFunction failed", zap.String("role", typeutil.RootCoordRole),
+			zap.String("function", in.FunctionName), zap.Int64("msgID", in.Base.MsgID), zap.Error(err))
+		metrics.RootCoordDDLReqCounter.WithLabelValues("DropFunction", metrics.FailLabel).Inc()
+		return failStatus(commonpb.ErrorCode_UnexpectedError, "DropFunction failed: "+err.Error()), nil
+	}
+	log.Debug("DropFunction success", zap.String("role", typeutil.RootCoordRole),
+		zap.String("function name", in.FunctionName), zap.Int64("msgID", in.Base.MsgID))
+
+	metrics.RootCoordDDLReqCounter.WithLabelValues("DropFunction", metrics.SuccessLabel).Inc()
+	metrics.RootCoordDDLReqLatency.WithLabelValues("DropFunction").Observe(float64(tr.ElapseSpan().Milliseconds()))
+	return succStatus(), nil
+}

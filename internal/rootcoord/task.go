@@ -952,3 +952,33 @@ func (t *AlterAliasReqTask) Execute(ctx context.Context) error {
 		WithAlias(t.Req.Alias).WithOperation(log.AlterCollectionAlias).WithTSO(ts).Info()
 	return nil
 }
+
+// CreateFunctionReqTask create function request task
+type CreateFunctionReqTask struct {
+	baseReqTask
+	Req *milvuspb.CreateFunctionRequest
+}
+
+func (c CreateFunctionReqTask) Type() commonpb.MsgType {
+	return c.Req.Base.MsgType
+}
+
+func (c CreateFunctionReqTask) Execute(ctx context.Context) error {
+	//TODO(Ziyu Wang) implement me
+	panic("implement me")
+}
+
+// DropFunctionReqTask drop function request task
+type DropFunctionReqTask struct {
+	baseReqTask
+	Req *milvuspb.DropFunctionRequest
+}
+
+func (d DropFunctionReqTask) Type() commonpb.MsgType {
+	return d.Req.Base.MsgType
+}
+
+func (d DropFunctionReqTask) Execute(ctx context.Context) error {
+	//TODO(Ziyu Wang) implement me
+	panic("implement me")
+}
