@@ -346,12 +346,14 @@ enum MsgType : int {
   SelectGrant = 1607,
   RefreshPolicyInfoCache = 1608,
   ListPolicy = 1609,
+  CreateFunction = 1700,
+  DropFunction = 1701,
   MsgType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   MsgType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool MsgType_IsValid(int value);
 constexpr MsgType MsgType_MIN = Undefined;
-constexpr MsgType MsgType_MAX = ListPolicy;
+constexpr MsgType MsgType_MAX = DropFunction;
 constexpr int MsgType_ARRAYSIZE = MsgType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MsgType_descriptor();

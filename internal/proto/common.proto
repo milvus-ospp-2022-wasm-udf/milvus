@@ -223,6 +223,10 @@ enum MsgType {
     SelectGrant = 1607;
     RefreshPolicyInfoCache = 1608;
     ListPolicy = 1609;
+
+    /* DEFINITION REQUESTS: FUNCTION */
+    CreateFunction = 1700;
+    DropFunction = 1701;
 }
 
 message MsgBase {

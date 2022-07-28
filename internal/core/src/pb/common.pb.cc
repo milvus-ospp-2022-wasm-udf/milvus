@@ -395,7 +395,7 @@ const char descriptor_table_protodef_common_2eproto[] PROTOBUF_SECTION_VARIABLE(
   "\022\n\n\006Sealed\020\003\022\013\n\007Flushed\020\004\022\014\n\010Flushing\020\005\022"
   "\013\n\007Dropped\020\006\022\r\n\tImporting\020\007*>\n\017Placehold"
   "erType\022\010\n\004None\020\000\022\020\n\014BinaryVector\020d\022\017\n\013Fl"
-  "oatVector\020e*\266\014\n\007MsgType\022\r\n\tUndefined\020\000\022\024"
+  "oatVector\020e*\336\014\n\007MsgType\022\r\n\tUndefined\020\000\022\024"
   "\n\020CreateCollection\020d\022\022\n\016DropCollection\020e"
   "\022\021\n\rHasCollection\020f\022\026\n\022DescribeCollectio"
   "n\020g\022\023\n\017ShowCollections\020h\022\024\n\020GetSystemCon"
@@ -435,7 +435,8 @@ const char descriptor_table_protodef_common_2eproto[] PROTOBUF_SECTION_VARIABLE(
   "\017\n\nSelectUser\020\304\014\022\023\n\016SelectResource\020\305\014\022\025\n"
   "\020OperatePrivilege\020\306\014\022\020\n\013SelectGrant\020\307\014\022\033"
   "\n\026RefreshPolicyInfoCache\020\310\014\022\017\n\nListPolic"
-  "y\020\311\014*\"\n\007DslType\022\007\n\003Dsl\020\000\022\016\n\nBoolExprV1\020\001"
+  "y\020\311\014\022\023\n\016CreateFunction\020\244\r\022\021\n\014DropFunctio"
+  "n\020\245\r*\"\n\007DslType\022\007\n\003Dsl\020\000\022\016\n\nBoolExprV1\020\001"
   "*B\n\017CompactionState\022\021\n\rUndefiedState\020\000\022\r"
   "\n\tExecuting\020\001\022\r\n\tCompleted\020\002*X\n\020Consiste"
   "ncyLevel\022\n\n\006Strong\020\000\022\013\n\007Session\020\001\022\013\n\007Bou"
@@ -476,7 +477,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_com
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_common_2eproto_once;
 static bool descriptor_table_common_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_common_2eproto = {
-  &descriptor_table_common_2eproto_initialized, descriptor_table_protodef_common_2eproto, "common.proto", 4705,
+  &descriptor_table_common_2eproto_initialized, descriptor_table_protodef_common_2eproto, "common.proto", 4745,
   &descriptor_table_common_2eproto_once, descriptor_table_common_2eproto_sccs, descriptor_table_common_2eproto_deps, 11, 1,
   schemas, file_default_instances, TableStruct_common_2eproto::offsets,
   file_level_metadata_common_2eproto, 11, file_level_enum_descriptors_common_2eproto, file_level_service_descriptors_common_2eproto,
@@ -682,6 +683,8 @@ bool MsgType_IsValid(int value) {
     case 1607:
     case 1608:
     case 1609:
+    case 1700:
+    case 1701:
       return true;
     default:
       return false;
