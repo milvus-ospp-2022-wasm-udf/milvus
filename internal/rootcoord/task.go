@@ -1173,3 +1173,51 @@ func (t *AlterAliasReqTask) Execute(ctx context.Context) error {
 
 	return t.core.ExpireMetaCache(ctx, []string{t.Req.Alias}, InvalidCollectionID, ts)
 }
+
+// CreateFunctionReqTask create function request task
+type CreateFunctionReqTask struct {
+	baseReqTask
+	Req *milvuspb.CreateFunctionRequest
+}
+
+func (t CreateFunctionReqTask) Type() commonpb.MsgType {
+	return t.Req.Base.MsgType
+}
+
+func (t CreateFunctionReqTask) Execute(ctx context.Context) error {
+	if t.Type() != commonpb.MsgType_CreateFunction {
+		return fmt.Errorf("create function, msg type = %s", commonpb.MsgType_name[int32(t.Type())])
+	}
+	//TODO(Ziyu Wang) <function_name, wasm_binary_file> is stored in the map temporarily
+	wf := &WasmFunction{
+		functionMap: map[string][]byte{},
+	}
+	wf.CreateFunction(t.Req.FunctionName, t.Req.WasmBinaryFile)
+	return nil
+}
+
+// DropFunctionReqTask drop function request task
+type DropFunctionReqTask struct {
+	baseReqTask
+	Req *milvuspb.DropFunctionRequest
+}
+
+func (t DropFunctionReqTask) Type() commonpb.MsgType {
+	return t.Req.Base.MsgType
+}
+
+func (t DropFunctionReqTask) Execute(ctx context.Context) error {
+	if t.Type() != commonpb.MsgType_DropFunction {
+		return fmt.Errorf("drop function, msg type = %s", commonpb.MsgType_name[int32(t.Type())])
+	}
+
+	//TODO(Ziyu Wang) DROP function by name
+	wf := &WasmFunction{
+		functionMap: map[string][]byte{
+			"simple": []byte("simple"),
+		},
+	}
+	//TODO(Ziyu Wang) Check if FunctionName is exist before DropFunction
+	wf.DropFunction(t.Req.FunctionName)
+	return nil
+}
