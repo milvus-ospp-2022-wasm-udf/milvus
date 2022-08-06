@@ -84,3 +84,7 @@ endif()
 #if ( LINUX )
 #    add_subdirectory( rapidxml )
 #endif()
+
+# ******************************* Thridparty wasmtime ********************************
+add_subdirectory( wasmtime-c-api )
+
