@@ -80,6 +80,6 @@ endif()
 #    add_subdirectory( rapidxml )
 #endif()
 
-# ******************************* Thridparty wasmtime ********************************
+# ******************************* Thirdparty wasmtime ********************************
 add_subdirectory( wasmtime-c-api )
 

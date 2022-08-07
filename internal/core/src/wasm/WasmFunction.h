@@ -5,7 +5,7 @@
 #ifndef MILVUS_WASMFUNCTION_H
 #define MILVUS_WASMFUNCTION_H
 
-#include <wasmtime-c-api/wasmtime.hh>
+#include "wasmtime-c-api/include/wasmtime.hh"
 
 class WasmFunction {
 private:
