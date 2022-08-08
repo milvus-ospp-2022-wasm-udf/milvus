@@ -1,7 +1,7 @@
-set(WASMTIME_LOCAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+set(WASMTIME_LOCAL_PATH "${CMAKE_SOURCE_DIR}/thirdparty/wasmtime-c-api")
 set(WASMTIME_INCLUDE_DIR ${WASMTIME_LOCAL_PATH}/include)
 set(WASMTIME_LIBRARY ${WASMTIME_LOCAL_PATH}/lib)
-set(WASMTIME_LIBRARYS libwasmtime.a libwasmtime.so stdc++ pthread dl)
+set(WASMTIME_LIBRARYS libwasmtime.a libwasmtime.so stdc++ -lpthread -ldl -lm)
 
 message(${WASMTIME_LOCAL_PATH})
 message(${WASMTIME_INCLUDE_DIR})
