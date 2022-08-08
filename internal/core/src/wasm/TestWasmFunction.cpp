@@ -1,27 +1,13 @@
 //
-// Created by wzy on 22-8-6.
+// Created by wzy on 22-8-8.
 //
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <wasmtime.hh>
-
-using namespace wasmtime;
-
-std::string readFile(const char* name) {
-    std::ifstream watFile;
-    watFile.open(name);
-    std::stringstream strStream;
-    strStream << watFile.rdbuf();
-    return strStream.str();
-}
+#include "wasm/WasmFunction.h"
 
 int main() {
-    // Load our WebAssembly (parsed WAT in our case), and then load it into a
-    // `Module` which is attached to a `Store`. After we've got that we
-    // can instantiate it.
-    Engine engine;
-    Store store(engine);
+    WasmFunction wasmFunction;
     auto WatStr = "(module\n"
                   "  (func $gcd (param i32 i32) (result i32)\n"
                   "    (local i32)\n"
@@ -47,14 +33,7 @@ int main() {
                   "    end\n"
                   "    local.get 2\n"
                   "  )\n"
-                  "  (export \"gcd\" (func $gcd))\n"
+                  "  (export \"main\" (func $gcd))\n"
                   ")";
-    auto module = Module::compile(engine, WatStr).unwrap();
-    auto instance = Instance::create(store, module, {}).unwrap();
-
-    // Invoke `gcd` export
-    auto gcd = std::get<Func>(*instance.get(store, "gcd"));
-    auto results = gcd.call(store, {6, 27}).unwrap();
-
-    std::cout << "gcd(6, 27) = " << results[0].i32() << "\n";
+    wasmFunction.runWat(WatStr);
 }
