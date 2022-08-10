@@ -46,6 +46,7 @@ set(MILVUS_TEST_FILES
         test_string_expr.cpp
         test_timestamp_index.cpp
         test_utils.cpp
+        test_wasm.cpp
         )
 
 if (LINUX OR APPLE)
@@ -92,6 +93,8 @@ target_link_libraries(all_tests
         milvus_log
         milvus_storage
         pthread
+        $<TARGET_OBJECTS:wasm_function_obj>
+        wasmtime
         )
 
 install(TARGETS all_tests DESTINATION unittest)
