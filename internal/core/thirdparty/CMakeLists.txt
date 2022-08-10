@@ -81,5 +81,5 @@ endif()
 #endif()
 
 # ******************************* Thirdparty wasmtime ********************************
-add_subdirectory( wasmtime-c-api )
+add_subdirectory( wasmtime )
 

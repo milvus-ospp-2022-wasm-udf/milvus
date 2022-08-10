@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <wasmtime.hh>
+#include "wasmtime.hh"
 
 using namespace wasmtime;
 
