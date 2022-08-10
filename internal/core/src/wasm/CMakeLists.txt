@@ -1,35 +1,27 @@
-set(WASMTIME_LOCAL_PATH "${CMAKE_SOURCE_DIR}/thirdparty/wasmtime-c-api")
-set(WASMTIME_INCLUDE_DIR ${WASMTIME_LOCAL_PATH}/include)
-set(WASMTIME_LIBRARY ${WASMTIME_LOCAL_PATH}/lib)
-set(WASMTIME_LIBRARYS libwasmtime.a libwasmtime.so stdc++ -lpthread -ldl -lm)
+cmake_minimum_required(VERSION 3.23)
 
-message(${WASMTIME_LOCAL_PATH})
-message(${WASMTIME_INCLUDE_DIR})
-message(${WASMTIME_LIBRARY})
-message(${WASMTIME_LIBRARYS})
+set(CMAKE_CXX_STANDARD 17)
 
-
-#TestWasm
-include_directories(TestWasm INTERFACE ${WASMTIME_INCLUDE_DIR})
-link_directories(${WASMTIME_LIBRARY})
+#add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/wasmtime/crates/c-api
+#        ${CMAKE_CURRENT_BINARY_DIR}/wasmtime)
 
 add_executable(TestWasm TestWasm.cpp)
 
-target_include_directories(TestWasm INTERFACE ${WASMTIME_INCLUDE_DIR})
-target_link_libraries(TestWasm ${WASMTIME_LIBRARYS})
+target_include_directories(TestWasm PUBLIC wasmtime)
+target_link_libraries(TestWasm PUBLIC wasmtime)
 
-#TestWasmFunction
-include_directories(TestWasmFunction INTERFACE ${WASMTIME_INCLUDE_DIR})
-link_directories(${WASMTIME_LIBRARY})
-
-add_executable(TestWasmFunction TestWasmFunction.cpp WasmFunction.cpp)
-
-target_include_directories(TestWasmFunction INTERFACE ${WASMTIME_INCLUDE_DIR})
-target_link_libraries(TestWasmFunction ${WASMTIME_LIBRARYS})
 #WasmFunction
 add_library(
         wasm_function_obj OBJECT
         WasmFunction.cpp
 )
 
-target_link_libraries(wasm_function_obj ${WASMTIME_LIBRARYS})
+add_executable(TestWasmFunction
+        TestWasmFunction.cpp
+        $<TARGET_OBJECTS:wasm_function_obj>
+)
+
+target_link_libraries(wasm_function_obj PUBLIC wasmtime)
+
+target_include_directories(TestWasmFunction PUBLIC wasmtime)
+target_link_libraries(TestWasmFunction PUBLIC wasmtime)
