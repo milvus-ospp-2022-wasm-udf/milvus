@@ -1,0 +1,9 @@
+[submodule "thirdparty/wasmtime"]
+	path = thirdparty/wasmtime
+	url = git@github.com:bytecodealliance/wasmtime.git
+[submodule "internal/core/thirdparty/thirdparty/wasmtime"]
+	path = internal/core/thirdparty/thirdparty/wasmtime
+	url = https://github.com/bytecodealliance/wasmtime.git
+[submodule "internal/core/thirdparty/wasmtime"]
+	path = internal/core/thirdparty/wasmtime
+	url = https://github.com/bytecodealliance/wasmtime.git

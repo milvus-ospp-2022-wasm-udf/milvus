@@ -47,6 +47,7 @@ set(MILVUS_TEST_FILES
         test_timestamp_index.cpp
         test_utils.cpp
         test_data_codec.cpp
+        test_wasm.cpp
         )
 
 if ( BUILD_DISK_ANN STREQUAL "ON" )
@@ -96,6 +97,7 @@ target_link_libraries(all_tests
         milvus_segcore
         milvus_indexbuilder
         pthread
+        wasmtime
         )
 
 install(TARGETS all_tests DESTINATION unittest)

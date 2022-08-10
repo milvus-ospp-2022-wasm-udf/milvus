@@ -43,4 +43,5 @@ void WasmFunction::runWat(const std::string &watString) const {
     auto results = func.call(store, {6, 27}).unwrap();
 
     std::cout << "gcd(6, 27) = " << results[0].i32() << "\n";
+
 }
