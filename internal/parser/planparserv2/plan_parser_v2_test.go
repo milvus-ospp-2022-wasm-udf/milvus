@@ -535,3 +535,25 @@ func Test_handleExpr_17126(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+// test udf expr
+func TestParseExpr_UDF(t *testing.T) {
+	schema := newTestSchema()
+	helper, err := typeutil.CreateSchemaHelper(schema)
+	assert.NoError(t, err)
+
+	exprStrs := []string{
+		`UDF "funcName" [2]`,
+		`UDF "funcName" [Int8Field]`,
+		`UDF "funcName" [Int8Field, 2]`,
+		`UDF "funcName" [Int8Field, Int8Field]`,
+		`UDF "funcName" [Int8Field, 2, Int16Field, 4]`,
+		`UDF "funcName" [StringField, "str13", "str14"]`,
+	}
+
+	for _, exprStr := range exprStrs {
+		expr, err := ParseExpr(helper, exprStr)
+		ShowExpr(expr)
+		assert.NoError(t, err, exprStr)
+	}
+}

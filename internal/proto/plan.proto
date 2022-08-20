@@ -125,6 +125,14 @@ message BinaryArithOpEvalRangeExpr {
   GenericValue value = 5;
 }
 
+message UdfExpr {
+  string udf_func_name = 1;
+  repeated ColumnInfo column_info = 2;
+  repeated GenericValue values = 3;
+  // TODO (wangziyu): add wasm body
+  reserved 4 to 6;
+}
+
 message Expr {
   oneof expr {
     TermExpr term_expr = 1;
@@ -137,6 +145,7 @@ message Expr {
     BinaryArithExpr binary_arith_expr = 8;
     ValueExpr value_expr = 9;
     ColumnExpr column_expr = 10;
+    UdfExpr udf_expr = 11;
   };
 }
 

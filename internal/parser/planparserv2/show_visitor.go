@@ -59,6 +59,8 @@ func (v *ShowExprVisitor) VisitExpr(expr *planpb.Expr) interface{} {
 		js["expr"] = v.VisitValueExpr(realExpr.ValueExpr)
 	case *planpb.Expr_ColumnExpr:
 		js["expr"] = v.VisitColumnExpr(realExpr.ColumnExpr)
+	case *planpb.Expr_UdfExpr:
+		js["expr"] = v.VisitUdfExpr(realExpr.UdfExpr)
 	default:
 		js["expr"] = ""
 	}
@@ -152,6 +154,23 @@ func (v *ShowExprVisitor) VisitColumnExpr(expr *planpb.ColumnExpr) interface{} {
 	js := make(map[string]interface{})
 	js["expr_type"] = "column"
 	js["column_info"] = extractColumnInfo(expr.GetInfo())
+	return js
+}
+
+func (v *ShowExprVisitor) VisitUdfExpr(expr *planpb.UdfExpr) interface{} {
+	js := make(map[string]interface{})
+	js["expr_type"] = "udf"
+	js["udf_func_name"] = expr.GetUdfFuncName()
+	columnInfos := make([]interface{}, 0, len(expr.ColumnInfo))
+	for _, v := range expr.ColumnInfo {
+		columnInfos = append(columnInfos, extractColumnInfo(v))
+	}
+	js["column_infos"] = columnInfos
+	values := make([]interface{}, 0, len(expr.Values))
+	for _, v := range expr.Values {
+		values = append(values, extractGenericValue(v))
+	}
+	js["values"] = values
 	return js
 }
 
