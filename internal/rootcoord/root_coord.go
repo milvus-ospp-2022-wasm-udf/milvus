@@ -2981,7 +2981,11 @@ func (c *Core) ListCredUsers(ctx context.Context, in *milvuspb.ListCredUsersRequ
 	}, nil
 }
 
+<<<<<<< HEAD
 // CreateFunction create collection alias
+=======
+// CreateFunction create Function
+>>>>>>> wasm-udf1
 func (c *Core) CreateFunction(ctx context.Context, in *milvuspb.CreateFunctionRequest) (*commonpb.Status, error) {
 	//TODO implement CreateFunction
 	metrics.RootCoordDDLReqCounter.WithLabelValues("CreateFunction", metrics.TotalLabel).Inc()
@@ -3016,7 +3020,11 @@ func (c *Core) CreateFunction(ctx context.Context, in *milvuspb.CreateFunctionRe
 	return succStatus(), nil
 }
 
+<<<<<<< HEAD
 // DropAlias drop collection alias
+=======
+// DropFunction drop function
+>>>>>>> wasm-udf1
 func (c *Core) DropFunction(ctx context.Context, in *milvuspb.DropFunctionRequest) (*commonpb.Status, error) {
 	metrics.RootCoordDDLReqCounter.WithLabelValues("DropFunction", metrics.TotalLabel).Inc()
 	if code, ok := c.checkHealthy(); !ok {
@@ -3025,7 +3033,10 @@ func (c *Core) DropFunction(ctx context.Context, in *milvuspb.DropFunctionReques
 	tr := timerecord.NewTimeRecorder("DropFunction")
 	log.Debug("DropFunction", zap.String("role", typeutil.RootCoordRole),
 		zap.String("function name", in.FunctionName), zap.Int64("msgID", in.Base.MsgID))
+<<<<<<< HEAD
 	//TODO implement CreateFunction
+=======
+>>>>>>> wasm-udf1
 	t := &DropFunctionReqTask{
 		baseReqTask: baseReqTask{
 			ctx:  ctx,

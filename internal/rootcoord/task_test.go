@@ -3,6 +3,8 @@ package rootcoord
 import (
 	"context"
 	"errors"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
@@ -150,4 +152,31 @@ func TestCreateCollectionReqTask_Execute_hasSystemFields(t *testing.T) {
 	}
 	err = task.Execute(context.Background())
 	assert.Error(t, err)
+}
+
+func TestCreateFunctionReqTask_Execute(t *testing.T) {
+	str, err := os.Getwd()
+	assert.NoError(t, err)
+	wasm, err := ioutil.ReadFile(str + "/wasmudf/simple.wasm")
+	assert.NoError(t, err)
+	task := &CreateFunctionReqTask{
+		Req: &milvuspb.CreateFunctionRequest{
+			Base:           &commonpb.MsgBase{MsgType: commonpb.MsgType_CreateFunction},
+			FunctionName:   "simple",
+			WasmBinaryFile: wasm,
+		},
+	}
+	err = task.Execute(context.Background())
+	assert.NoError(t, err)
+}
+
+func TestDropFunctionReqTask_Execute(t *testing.T) {
+	task := &DropFunctionReqTask{
+		Req: &milvuspb.DropFunctionRequest{
+			Base:         &commonpb.MsgBase{MsgType: commonpb.MsgType_DropFunction},
+			FunctionName: "simple",
+		},
+	}
+	err := task.Execute(context.Background())
+	assert.NoError(t, err)
 }

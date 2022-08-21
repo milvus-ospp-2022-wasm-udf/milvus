@@ -1180,13 +1180,20 @@ type CreateFunctionReqTask struct {
 	Req *milvuspb.CreateFunctionRequest
 }
 
-func (c CreateFunctionReqTask) Type() commonpb.MsgType {
-	return c.Req.Base.MsgType
+func (t CreateFunctionReqTask) Type() commonpb.MsgType {
+	return t.Req.Base.MsgType
 }
 
-func (c CreateFunctionReqTask) Execute(ctx context.Context) error {
-	//TODO(Ziyu Wang) implement me
-	panic("implement me")
+func (t CreateFunctionReqTask) Execute(ctx context.Context) error {
+	if t.Type() != commonpb.MsgType_CreateFunction {
+		return fmt.Errorf("create function, msg type = %s", commonpb.MsgType_name[int32(t.Type())])
+	}
+	//TODO(Ziyu Wang) <function_name, wasm_binary_file> is stored in the map temporarily
+	wf := &WasmFunction{
+		functionMap: map[string][]byte{},
+	}
+	wf.CreateFunction(t.Req.FunctionName, t.Req.WasmBinaryFile)
+	return nil
 }
 
 // DropFunctionReqTask drop function request task
@@ -1195,11 +1202,22 @@ type DropFunctionReqTask struct {
 	Req *milvuspb.DropFunctionRequest
 }
 
-func (d DropFunctionReqTask) Type() commonpb.MsgType {
-	return d.Req.Base.MsgType
+func (t DropFunctionReqTask) Type() commonpb.MsgType {
+	return t.Req.Base.MsgType
 }
 
-func (d DropFunctionReqTask) Execute(ctx context.Context) error {
-	//TODO(Ziyu Wang) implement me
-	panic("implement me")
+func (t DropFunctionReqTask) Execute(ctx context.Context) error {
+	if t.Type() != commonpb.MsgType_DropFunction {
+		return fmt.Errorf("drop function, msg type = %s", commonpb.MsgType_name[int32(t.Type())])
+	}
+
+	//TODO(Ziyu Wang) DROP function by name
+	wf := &WasmFunction{
+		functionMap: map[string][]byte{
+			"simple": []byte("simple"),
+		},
+	}
+	//TODO(Ziyu Wang) Check if FunctionName is exist before DropFunction
+	wf.DropFunction(t.Req.FunctionName)
+	return nil
 }
