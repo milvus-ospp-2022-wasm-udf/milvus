@@ -705,6 +705,10 @@ type RootCoord interface {
 	OperatePrivilege(ctx context.Context, req *milvuspb.OperatePrivilegeRequest) (*commonpb.Status, error)
 	SelectGrant(ctx context.Context, req *milvuspb.SelectGrantRequest) (*milvuspb.SelectGrantResponse, error)
 	ListPolicy(ctx context.Context, in *internalpb.ListPolicyRequest) (*internalpb.ListPolicyResponse, error)
+	// CreateFunction create wasm-based function
+	CreateFunction(ctx context.Context, req *milvuspb.CreateFunctionRequest) (*commonpb.Status, error)
+	// DropFunction Drop function by name
+	DropFunction(ctx context.Context, req *milvuspb.DropFunctionRequest) (*commonpb.Status, error)
 }
 
 // RootCoordComponent is used by grpc server of RootCoord

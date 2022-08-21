@@ -83,6 +83,9 @@ service MilvusService {
   rpc SelectUser(SelectUserRequest) returns (SelectUserResponse) {}
   rpc OperatePrivilege(OperatePrivilegeRequest) returns (common.Status) {}
   rpc SelectGrant(SelectGrantRequest) returns (SelectGrantResponse) {}
+
+  rpc CreateFunction(CreateFunctionRequest) returns (common.Status){}
+  rpc DropFunction(DropFunctionRequest) returns (common.Status) {}
 }
 
 message CreateAliasRequest {
@@ -1260,3 +1263,23 @@ extend google.protobuf.FileOptions {
 option (milvus_ext_obj) = {
   version: "2.1.0"
 };
+
+/**
+* Create function in milvus
+*/
+message CreateFunctionRequest {
+  common.MsgBase base = 1;
+  // The unique function name in milvus.(Required)
+  string function_name = 2;
+  // The wasm-based binary file.(Required)
+  bytes wasm_binary_file = 3;
+}
+
+/**
+* Drop function in milvus, also will drop wasm binary file.
+*/
+message DropFunctionRequest {
+  common.MsgBase base = 1;
+  // The unique function name in milvus.(Required)
+  string function_name = 2;
+}
