@@ -913,12 +913,34 @@ func (qc *QueryCoord) LoadBalance(ctx context.Context, req *querypb.LoadBalanceR
 	return status, nil
 }
 
+//ShowConfigurations returns the configurations of queryCoord matching req.Pattern
+func (qc *QueryCoord) ShowConfigurations(ctx context.Context, req *internalpb.ShowConfigurationsRequest) (*internalpb.ShowConfigurationsResponse, error) {
+	log.Debug("ShowConfigurations received",
+		zap.String("role", typeutil.QueryCoordRole),
+		zap.String("pattern", req.Pattern),
+		zap.Int64("msgID", req.GetBase().GetMsgID()))
+
+	if qc.stateCode.Load() != internalpb.StateCode_Healthy {
+		err := errors.New("QueryCoord is not healthy")
+		log.Warn("ShowConfigurations failed", zap.String("role", typeutil.QueryCoordRole), zap.Int64("msgID", req.GetBase().GetMsgID()), zap.Error(err))
+		return &internalpb.ShowConfigurationsResponse{
+			Status: &commonpb.Status{
+				ErrorCode: commonpb.ErrorCode_UnexpectedError,
+				Reason:    err.Error(),
+			},
+			Configuations: nil,
+		}, nil
+	}
+
+	return getComponentConfigurations(ctx, req), nil
+}
+
 // GetMetrics returns all the queryCoord's metrics
 func (qc *QueryCoord) GetMetrics(ctx context.Context, req *milvuspb.GetMetricsRequest) (*milvuspb.GetMetricsResponse, error) {
 	log.Debug("getMetricsRequest received",
 		zap.String("role", typeutil.QueryCoordRole),
 		zap.String("req", req.Request),
-		zap.Int64("msgID", req.Base.MsgID))
+		zap.Int64("msgID", req.GetBase().GetMsgID()))
 
 	getMetricsResponse := &milvuspb.GetMetricsResponse{
 		Status: &commonpb.Status{
@@ -930,7 +952,7 @@ func (qc *QueryCoord) GetMetrics(ctx context.Context, req *milvuspb.GetMetricsRe
 	if qc.stateCode.Load() != internalpb.StateCode_Healthy {
 		err := errors.New("QueryCoord is not healthy")
 		getMetricsResponse.Status.Reason = err.Error()
-		log.Warn("getMetrics failed", zap.String("role", typeutil.QueryCoordRole), zap.Int64("msgID", req.Base.MsgID), zap.Error(err))
+		log.Warn("getMetrics failed", zap.String("role", typeutil.QueryCoordRole), zap.Int64("msgID", req.GetBase().GetMsgID()), zap.Error(err))
 		return getMetricsResponse, nil
 	}
 
@@ -946,7 +968,7 @@ func (qc *QueryCoord) GetMetrics(ctx context.Context, req *milvuspb.GetMetricsRe
 
 	log.Debug("getMetrics",
 		zap.String("role", typeutil.QueryCoordRole),
-		zap.Int64("msgID", req.Base.MsgID),
+		zap.Int64("msgID", req.GetBase().GetMsgID()),
 		zap.String("metric_type", metricType))
 
 	if metricType == metricsinfo.SystemInfoMetrics {
@@ -960,13 +982,13 @@ func (qc *QueryCoord) GetMetrics(ctx context.Context, req *milvuspb.GetMetricsRe
 
 		log.Debug("failed to get system info metrics from cache, recompute instead",
 			zap.String("role", typeutil.QueryCoordRole),
-			zap.Int64("msgID", req.Base.MsgID))
+			zap.Int64("msgID", req.GetBase().GetMsgID()))
 
 		metrics, err := getSystemInfoMetrics(ctx, req, qc)
 		if err != nil {
 			log.Error("getSystemInfoMetrics failed",
 				zap.String("role", typeutil.QueryCoordRole),
-				zap.Int64("msgID", req.Base.MsgID),
+				zap.Int64("msgID", req.GetBase().GetMsgID()),
 				zap.Error(err))
 			getMetricsResponse.Status.Reason = err.Error()
 			return getMetricsResponse, nil
@@ -988,7 +1010,7 @@ func (qc *QueryCoord) GetMetrics(ctx context.Context, req *milvuspb.GetMetricsRe
 	log.Warn("getMetrics failed",
 		zap.String("role", typeutil.QueryCoordRole),
 		zap.String("req", req.Request),
-		zap.Int64("msgID", req.Base.MsgID),
+		zap.Int64("msgID", req.GetBase().GetMsgID()),
 		zap.Error(err))
 
 	return getMetricsResponse, nil
@@ -1144,6 +1166,12 @@ func (qc *QueryCoord) GetShardLeaders(ctx context.Context, req *querypb.GetShard
 
 	// check if there are enough available distinct shards
 	if len(shardLeaderLists) != len(shardNames) {
+		log.Warn("no replica available",
+			zap.String("role", typeutil.QueryCoordRole),
+			zap.Int64("collectionID", req.CollectionID),
+			zap.Any("replicasLists", shardLeaderLists),
+			zap.Any("replicaNames", shardNames))
+
 		return &querypb.GetShardLeadersResponse{
 			Status: &commonpb.Status{
 				ErrorCode: commonpb.ErrorCode_NoReplicaAvailable,

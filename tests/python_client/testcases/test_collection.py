@@ -1381,6 +1381,7 @@ class TestCollectionDataframe(TestcaseBase):
         res, _ = self.collection_wrap.construct_from_dataframe(cf.gen_unique_str(prefix), df,
                                                                primary_field=ct.default_int64_field_name, auto_id=False)
         collection_w = res[0]
+        collection_w.flush()
         assert collection_w.num_entities == nb
         mutation_res = res[1]
         assert mutation_res.primary_keys == df[ct.default_int64_field_name].values.tolist()
@@ -1501,6 +1502,22 @@ class TestCollectionCountBinary(TestcaseBase):
         mutation_res, _ = collection_w.insert(data=df)
         collection_w.create_index(ct.default_binary_vec_field_name, default_binary_index_params)
         assert collection_w.num_entities == insert_count
+
+    @pytest.mark.tags(CaseLabel.L1)
+    @pytest.mark.parametrize("auto_id",[True, False])
+    def test_binary_collection_with_min_dim(self, auto_id):
+        """
+        target: test binary collection when dim=1
+        method: creat collection and set dim=1
+        expected: check error message successfully
+        """
+        self._connect()
+        dim = 1
+        c_schema = cf.gen_default_binary_collection_schema(auto_id=auto_id, dim=dim)
+        collection_w = self.init_collection_wrap(schema=c_schema,
+                                                 check_task=CheckTasks.err_res,
+                                                 check_items={"err_code": 1,
+                                                              "err_msg": f"invalid dimension: {dim}. should be multiple of 8."})
 
     @pytest.mark.tags(CaseLabel.L2)
     def test_collection_count_no_entities(self):

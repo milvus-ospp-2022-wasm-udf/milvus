@@ -100,6 +100,7 @@ type RootCoordMock struct {
 
 	describeCollectionFunc describeCollectionFuncType
 	showPartitionsFunc     showPartitionsFuncType
+	showConfigurationsFunc showConfigurationsFuncType
 	getMetricsFunc         getMetricsFuncType
 
 	// TODO(dragondriver): index-related
@@ -942,6 +943,28 @@ func (coord *RootCoordMock) SegmentFlushCompleted(ctx context.Context, in *datap
 	}, nil
 }
 
+func (coord *RootCoordMock) ShowConfigurations(ctx context.Context, req *internalpb.ShowConfigurationsRequest) (*internalpb.ShowConfigurationsResponse, error) {
+	if !coord.healthy() {
+		return &internalpb.ShowConfigurationsResponse{
+			Status: &commonpb.Status{
+				ErrorCode: commonpb.ErrorCode_UnexpectedError,
+				Reason:    "unhealthy",
+			},
+		}, nil
+	}
+
+	if coord.getMetricsFunc != nil {
+		return coord.showConfigurationsFunc(ctx, req)
+	}
+
+	return &internalpb.ShowConfigurationsResponse{
+		Status: &commonpb.Status{
+			ErrorCode: commonpb.ErrorCode_UnexpectedError,
+			Reason:    "not implemented",
+		},
+	}, nil
+}
+
 func (coord *RootCoordMock) GetMetrics(ctx context.Context, req *milvuspb.GetMetricsRequest) (*milvuspb.GetMetricsResponse, error) {
 	if !coord.healthy() {
 		return &milvuspb.GetMetricsResponse{
@@ -1081,6 +1104,38 @@ func (coord *RootCoordMock) GetCredential(ctx context.Context, req *rootcoordpb.
 	return &rootcoordpb.GetCredentialResponse{}, nil
 }
 
+func (coord *RootCoordMock) CreateRole(ctx context.Context, req *milvuspb.CreateRoleRequest) (*commonpb.Status, error) {
+	return &commonpb.Status{}, nil
+}
+
+func (coord *RootCoordMock) DropRole(ctx context.Context, req *milvuspb.DropRoleRequest) (*commonpb.Status, error) {
+	return &commonpb.Status{}, nil
+}
+
+func (coord *RootCoordMock) OperateUserRole(ctx context.Context, req *milvuspb.OperateUserRoleRequest) (*commonpb.Status, error) {
+	return &commonpb.Status{}, nil
+}
+
+func (coord *RootCoordMock) SelectRole(ctx context.Context, req *milvuspb.SelectRoleRequest) (*milvuspb.SelectRoleResponse, error) {
+	return &milvuspb.SelectRoleResponse{}, nil
+}
+
+func (coord *RootCoordMock) SelectUser(ctx context.Context, req *milvuspb.SelectUserRequest) (*milvuspb.SelectUserResponse, error) {
+	return &milvuspb.SelectUserResponse{}, nil
+}
+
+func (coord *RootCoordMock) OperatePrivilege(ctx context.Context, req *milvuspb.OperatePrivilegeRequest) (*commonpb.Status, error) {
+	return &commonpb.Status{}, nil
+}
+
+func (coord *RootCoordMock) SelectGrant(ctx context.Context, req *milvuspb.SelectGrantRequest) (*milvuspb.SelectGrantResponse, error) {
+	return &milvuspb.SelectGrantResponse{}, nil
+}
+
+func (coord *RootCoordMock) ListPolicy(ctx context.Context, in *internalpb.ListPolicyRequest) (*internalpb.ListPolicyResponse, error) {
+	return &internalpb.ListPolicyResponse{}, nil
+}
+
 type DescribeCollectionFunc func(ctx context.Context, request *milvuspb.DescribeCollectionRequest) (*milvuspb.DescribeCollectionResponse, error)
 type ShowPartitionsFunc func(ctx context.Context, request *milvuspb.ShowPartitionsRequest) (*milvuspb.ShowPartitionsResponse, error)
 type DescribeIndexFunc func(ctx context.Context, request *milvuspb.DescribeIndexRequest) (*milvuspb.DescribeIndexResponse, error)
@@ -1089,6 +1144,7 @@ type DescribeSegmentsFunc func(ctx context.Context, request *rootcoordpb.Describ
 type ImportFunc func(ctx context.Context, req *milvuspb.ImportRequest) (*milvuspb.ImportResponse, error)
 type DropCollectionFunc func(ctx context.Context, request *milvuspb.DropCollectionRequest) (*commonpb.Status, error)
 type GetIndexStateFunc func(ctx context.Context, request *milvuspb.GetIndexStateRequest) (*indexpb.GetIndexStatesResponse, error)
+type GetGetCredentialFunc func(ctx context.Context, req *rootcoordpb.GetCredentialRequest) (*rootcoordpb.GetCredentialResponse, error)
 
 type mockRootCoord struct {
 	types.RootCoord
@@ -1100,6 +1156,14 @@ type mockRootCoord struct {
 	ImportFunc
 	DropCollectionFunc
 	GetIndexStateFunc
+	GetGetCredentialFunc
+}
+
+func (m *mockRootCoord) GetCredential(ctx context.Context, request *rootcoordpb.GetCredentialRequest) (*rootcoordpb.GetCredentialResponse, error) {
+	if m.GetGetCredentialFunc != nil {
+		return m.GetGetCredentialFunc(ctx, request)
+	}
+	return nil, errors.New("mock")
 }
 
 func (m *mockRootCoord) DescribeCollection(ctx context.Context, request *milvuspb.DescribeCollectionRequest) (*milvuspb.DescribeCollectionResponse, error) {
@@ -1156,6 +1220,10 @@ func (m *mockRootCoord) GetIndexState(ctx context.Context, request *milvuspb.Get
 		return m.GetIndexStateFunc(ctx, request)
 	}
 	return nil, errors.New("mock")
+}
+
+func (m *mockRootCoord) ListPolicy(ctx context.Context, in *internalpb.ListPolicyRequest) (*internalpb.ListPolicyResponse, error) {
+	return &internalpb.ListPolicyResponse{}, nil
 }
 
 func newMockRootCoord() *mockRootCoord {

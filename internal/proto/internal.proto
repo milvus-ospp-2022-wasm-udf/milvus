@@ -310,4 +310,15 @@ message ListPolicyResponse {
   // Contain error_code and reason
   common.Status status = 1;
   repeated string policy_infos = 2;
+  repeated string user_roles = 3;
+}
+
+message ShowConfigurationsRequest {
+  common.MsgBase base = 1;
+  string pattern = 2;
+}
+
+message ShowConfigurationsResponse {
+  common.Status status = 1;
+  repeated common.KeyValuePair configuations = 2; 
 }

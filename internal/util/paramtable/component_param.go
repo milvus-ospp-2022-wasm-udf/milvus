@@ -13,7 +13,6 @@ package paramtable
 
 import (
 	"math"
-	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -21,9 +20,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/milvus-io/milvus/internal/log"
+	"go.uber.org/zap"
 )
 
 const (
@@ -131,6 +129,8 @@ type commonConfig struct {
 	SimdType    string
 
 	AuthorizationEnabled bool
+
+	ClusterName string
 }
 
 func (p *commonConfig) init(base *BaseTable) {
@@ -168,6 +168,8 @@ func (p *commonConfig) init(base *BaseTable) {
 	p.initStorageType()
 
 	p.initEnableAuthorization()
+
+	p.initClusterName()
 }
 
 func (p *commonConfig) initClusterPrefix() {
@@ -371,6 +373,10 @@ func (p *commonConfig) initEnableAuthorization() {
 	p.AuthorizationEnabled = p.Base.ParseBool("common.security.authorizationEnabled", false)
 }
 
+func (p *commonConfig) initClusterName() {
+	p.ClusterName = p.Base.LoadWithDefault("common.cluster.name", "")
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // --- rootcoord ---
 type rootCoordConfig struct {
@@ -433,6 +439,8 @@ type proxyConfig struct {
 	MaxShardNum              int32
 	MaxDimension             int64
 	GinLogging               bool
+	MaxUserNum               int
+	MaxRoleNum               int
 
 	// required from QueryCoord
 	SearchResultChannelNames   []string
@@ -460,6 +468,8 @@ func (p *proxyConfig) init(base *BaseTable) {
 
 	p.initMaxTaskNum()
 	p.initGinLogging()
+	p.initMaxUserNum()
+	p.initMaxRoleNum()
 }
 
 // InitAlias initialize Alias member.
@@ -558,6 +568,24 @@ func (p *proxyConfig) GetNodeID() UniqueID {
 		return val.(UniqueID)
 	}
 	return 0
+}
+
+func (p *proxyConfig) initMaxUserNum() {
+	str := p.Base.LoadWithDefault("proxy.maxUserNum", "100")
+	maxUserNum, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	p.MaxUserNum = int(maxUserNum)
+}
+
+func (p *proxyConfig) initMaxRoleNum() {
+	str := p.Base.LoadWithDefault("proxy.maxRoleNum", "10")
+	maxRoleNum, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	p.MaxRoleNum = int(maxRoleNum)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -680,8 +708,6 @@ type queryNodeConfig struct {
 	QueryNodeIP   string
 	QueryNodePort int64
 	NodeID        atomic.Value
-	// TODO: remove cacheSize
-	CacheSize int64 // deprecated
 
 	FlowGraphMaxQueueLength int32
 	FlowGraphMaxParallelism int32
@@ -719,7 +745,6 @@ type queryNodeConfig struct {
 func (p *queryNodeConfig) init(base *BaseTable) {
 	p.Base = base
 	p.NodeID.Store(UniqueID(0))
-	p.initCacheSize()
 
 	p.initFlowGraphMaxQueueLength()
 	p.initFlowGraphMaxParallelism()
@@ -746,27 +771,6 @@ func (p *queryNodeConfig) init(base *BaseTable) {
 // InitAlias initializes an alias for the QueryNode role.
 func (p *queryNodeConfig) InitAlias(alias string) {
 	p.Alias = alias
-}
-
-func (p *queryNodeConfig) initCacheSize() {
-	defer log.Debug("init cacheSize", zap.Any("cacheSize (GB)", p.CacheSize))
-
-	const defaultCacheSize = 32 // GB
-	p.CacheSize = defaultCacheSize
-
-	var err error
-	cacheSize := os.Getenv("CACHE_SIZE")
-	if cacheSize == "" {
-		cacheSize, err = p.Base.Load("queryNode.cacheSize")
-		if err != nil {
-			return
-		}
-	}
-	value, err := strconv.ParseInt(cacheSize, 10, 64)
-	if err != nil {
-		return
-	}
-	p.CacheSize = value
 }
 
 // advanced params
@@ -1137,7 +1141,12 @@ func (p *dataNodeConfig) initFlowGraphMaxParallelism() {
 }
 
 func (p *dataNodeConfig) initFlushInsertBufferSize() {
-	p.FlushInsertBufferSize = p.Base.ParseInt64("_DATANODE_INSERTBUFSIZE")
+	bufferSize := p.Base.LoadWithDefault2([]string{"DATA_NODE_IBUFSIZE", "datanode.flush.insertBufSize"}, "0")
+	bs, err := strconv.ParseInt(bufferSize, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	p.FlushInsertBufferSize = bs
 }
 
 func (p *dataNodeConfig) initInsertBinlogRootPath() {

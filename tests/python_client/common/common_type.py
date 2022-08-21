@@ -21,6 +21,8 @@ max_partition_num = 4096  # 256
 default_segment_row_limit = 1000
 default_server_segment_row_limit = 1024 * 512
 default_alias = "default"
+default_user = "root"
+default_password = "Milvus"
 default_bool_field_name = "bool"
 default_int8_field_name = "int8"
 default_int16_field_name = "int16"
@@ -46,6 +48,7 @@ float_field_desc = "float type field"
 float_vec_field_desc = "float vector type field"
 binary_vec_field_desc = "binary vector type field"
 max_dim = 32768
+min_dim = 1
 gracefulTime = 1
 default_nlist = 128
 compact_segment_num_threshold = 4
@@ -63,6 +66,7 @@ value_content = "value_content"
 
 err_code = "err_code"
 err_msg = "err_msg"
+in_cluster_env = "IN_CLUSTER"
 
 """" List of parameters used to pass """
 get_invalid_strs = [

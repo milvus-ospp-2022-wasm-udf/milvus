@@ -34,6 +34,7 @@ service DataCoord {
   rpc GetRecoveryInfo(GetRecoveryInfoRequest) returns (GetRecoveryInfoResponse){}
   rpc GetFlushedSegments(GetFlushedSegmentsRequest) returns(GetFlushedSegmentsResponse){}
 
+  rpc ShowConfigurations(internal.ShowConfigurationsRequest) returns (internal.ShowConfigurationsResponse){}
   // https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy
   rpc GetMetrics(milvus.GetMetricsRequest) returns (milvus.GetMetricsResponse) {}
   rpc CompleteCompaction(CompactionResult) returns (common.Status) {}
@@ -63,6 +64,7 @@ service DataNode {
   rpc WatchDmChannels(WatchDmChannelsRequest) returns (common.Status) {}
   rpc FlushSegments(FlushSegmentsRequest) returns(common.Status) {}
 
+  rpc ShowConfigurations(internal.ShowConfigurationsRequest) returns (internal.ShowConfigurationsResponse){}
   // https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy
   rpc GetMetrics(milvus.GetMetricsRequest) returns (milvus.GetMetricsResponse) {}
   rpc Compaction(CompactionPlan) returns (common.Status) {}
@@ -252,7 +254,6 @@ message SegmentInfo {
   repeated FieldBinlog statslogs = 12;
   // deltalogs consists of delete binlogs. FieldID is not used yet since delete is always applied on primary key
   repeated FieldBinlog deltalogs = 13;
-  
   bool createdByCompaction = 14;
   repeated int64 compactionFrom = 15;
   uint64 dropped_at = 16; // timestamp when segment marked drop
@@ -345,7 +346,7 @@ message Binlog {
   uint64 timestamp_from = 2;
   uint64 timestamp_to = 3;
   string log_path = 4;
-  int64 log_size = 5; 
+  int64 log_size = 5;
 }
 
 message GetRecoveryInfoResponse {

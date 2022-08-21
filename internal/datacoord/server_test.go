@@ -921,6 +921,35 @@ func TestServer_watchRootCoord(t *testing.T) {
 	assert.True(t, closed)
 }
 
+func TestServer_ShowConfigurations(t *testing.T) {
+	svr := newTestServer(t, nil)
+	defer closeTestServer(t, svr)
+	pattern := "Port"
+	req := &internalpb.ShowConfigurationsRequest{
+		Base: &commonpb.MsgBase{
+			MsgType: commonpb.MsgType_WatchQueryChannels,
+			MsgID:   rand.Int63(),
+		},
+		Pattern: pattern,
+	}
+
+	// server is closed
+	stateSave := atomic.LoadInt64(&svr.isServing)
+	atomic.StoreInt64(&svr.isServing, ServerStateInitializing)
+	resp, err := svr.ShowConfigurations(svr.ctx, req)
+	assert.Nil(t, err)
+	assert.Equal(t, commonpb.ErrorCode_UnexpectedError, resp.Status.ErrorCode)
+
+	// normal case
+	atomic.StoreInt64(&svr.isServing, stateSave)
+
+	resp, err = svr.ShowConfigurations(svr.ctx, req)
+	assert.NoError(t, err)
+	assert.Equal(t, commonpb.ErrorCode_Success, resp.Status.ErrorCode)
+	assert.Equal(t, 1, len(resp.Configuations))
+	assert.Equal(t, "datacoord.port", resp.Configuations[0].Key)
+}
+
 func TestServer_GetMetrics(t *testing.T) {
 	svr := newTestServer(t, nil)
 	defer closeTestServer(t, svr)
@@ -1145,7 +1174,7 @@ func TestSaveBinlogPaths(t *testing.T) {
 
 			svr.meta.AddCollection(&datapb.CollectionInfo{ID: 1})
 			err := svr.meta.AddSegment(&SegmentInfo{
-				SegmentInfo: &datapb.SegmentInfo{
+				Segment: &datapb.SegmentInfo{
 					ID:            1,
 					CollectionID:  1,
 					InsertChannel: "ch1",
@@ -1798,8 +1827,7 @@ func TestShouldDropChannel(t *testing.T) {
 	})
 
 	t.Run("channel in remove flag", func(t *testing.T) {
-		key := buildChannelRemovePath("ch1")
-		err := svr.meta.client.Save(key, removeFlagTomestone)
+		err := svr.meta.catalog.MarkChannelDeleted(context.TODO(), "ch1")
 		require.NoError(t, err)
 
 		assert.True(t, svr.handler.CheckShouldDropChannel("ch1"))
@@ -2598,7 +2626,7 @@ func TestDataCoordServer_SetSegmentState(t *testing.T) {
 		svr.meta.Lock()
 		func() {
 			defer svr.meta.Unlock()
-			svr.meta, _ = newMeta(&mockTxnKVext{})
+			svr.meta, _ = newMeta(context.TODO(), &mockTxnKVext{})
 		}()
 		defer closeTestServer(t, svr)
 		segment := &datapb.SegmentInfo{
@@ -3008,7 +3036,7 @@ func Test_initGarbageCollection(t *testing.T) {
 		Params.MinioCfg.Address = "host:9000:bad"
 		err := server.initGarbageCollection()
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to create minio client")
+		assert.Contains(t, err.Error(), "too many colons in address")
 	})
 
 	// mock CheckBucketFn
@@ -3026,6 +3054,12 @@ func Test_initGarbageCollection(t *testing.T) {
 	})
 	t.Run("iam_ok", func(t *testing.T) {
 		Params.MinioCfg.UseIAM = true
+		err := server.initGarbageCollection()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "404 Not Found")
+	})
+	t.Run("local storage init", func(t *testing.T) {
+		Params.CommonCfg.StorageType = "local"
 		err := server.initGarbageCollection()
 		assert.NoError(t, err)
 	})

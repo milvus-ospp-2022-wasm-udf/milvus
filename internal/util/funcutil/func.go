@@ -31,6 +31,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/milvus-io/milvus/internal/proto/milvuspb"
+
 	"go.uber.org/zap"
 
 	"github.com/go-basic/ipv4"
@@ -216,6 +218,14 @@ func KeyValuePair2Map(datas []*commonpb.KeyValuePair) map[string]string {
 	return results
 }
 
+func ConvertToKeyValuePairPointer(datas []commonpb.KeyValuePair) []*commonpb.KeyValuePair {
+	var kvs []*commonpb.KeyValuePair
+	for i := 0; i < len(datas); i++ {
+		kvs = append(kvs, &datas[i])
+	}
+	return kvs
+}
+
 // GenChannelSubName generate subName to watch channel
 func GenChannelSubName(prefix string, collectionID int64, nodeID int64) string {
 	return fmt.Sprintf("%s-%d-%d", prefix, collectionID, nodeID)
@@ -358,4 +368,41 @@ func IsGrpcErr(err error) bool {
 		}
 		err = errors.Unwrap(err)
 	}
+}
+
+func IsEmptyString(str string) bool {
+	return strings.TrimSpace(str) == ""
+}
+
+func HandleTenantForEtcdKey(prefix string, tenant string, key string) string {
+	res := prefix
+	if tenant != "" {
+		res += "/" + tenant
+	}
+	if key != "" {
+		res += "/" + key
+	}
+	return res
+}
+
+func IsRevoke(operateType milvuspb.OperatePrivilegeType) bool {
+	return operateType == milvuspb.OperatePrivilegeType_Revoke
+}
+
+func IsGrant(operateType milvuspb.OperatePrivilegeType) bool {
+	return operateType == milvuspb.OperatePrivilegeType_Grant
+}
+
+func EncodeUserRoleCache(user string, role string) string {
+	return fmt.Sprintf("%s/%s", user, role)
+}
+
+func DecodeUserRoleCache(cache string) (string, string, error) {
+	index := strings.LastIndex(cache, "/")
+	if index == -1 {
+		return "", "", fmt.Errorf("invalid param, cache: [%s]", cache)
+	}
+	user := cache[:index]
+	role := cache[index+1:]
+	return user, role, nil
 }

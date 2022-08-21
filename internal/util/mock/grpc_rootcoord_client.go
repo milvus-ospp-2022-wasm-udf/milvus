@@ -57,10 +57,6 @@ func (m *GrpcRootCoordClient) SelectUser(ctx context.Context, in *milvuspb.Selec
 	return &milvuspb.SelectUserResponse{}, m.Err
 }
 
-func (m *GrpcRootCoordClient) SelectResource(ctx context.Context, in *milvuspb.SelectResourceRequest, opts ...grpc.CallOption) (*milvuspb.SelectResourceResponse, error) {
-	return &milvuspb.SelectResourceResponse{}, m.Err
-}
-
 func (m *GrpcRootCoordClient) OperatePrivilege(ctx context.Context, in *milvuspb.OperatePrivilegeRequest, opts ...grpc.CallOption) (*commonpb.Status, error) {
 	return &commonpb.Status{}, m.Err
 }
@@ -181,6 +177,10 @@ func (m *GrpcRootCoordClient) InvalidateCollectionMetaCache(ctx context.Context,
 
 func (m *GrpcRootCoordClient) SegmentFlushCompleted(ctx context.Context, in *datapb.SegmentFlushCompletedMsg, opts ...grpc.CallOption) (*commonpb.Status, error) {
 	return &commonpb.Status{}, m.Err
+}
+
+func (m *GrpcRootCoordClient) ShowConfigurations(ctx context.Context, in *internalpb.ShowConfigurationsRequest, opts ...grpc.CallOption) (*internalpb.ShowConfigurationsResponse, error) {
+	return &internalpb.ShowConfigurationsResponse{}, m.Err
 }
 
 func (m *GrpcRootCoordClient) GetMetrics(ctx context.Context, in *milvuspb.GetMetricsRequest, opts ...grpc.CallOption) (*milvuspb.GetMetricsResponse, error) {

@@ -503,3 +503,42 @@ func TestIsGrpcErr(t *testing.T) {
 		assert.True(t, IsGrpcErr(errWrap))
 	})
 }
+
+func TestIsEmptyString(t *testing.T) {
+	assert.Equal(t, IsEmptyString(""), true)
+	assert.Equal(t, IsEmptyString(" "), true)
+	assert.Equal(t, IsEmptyString("hello"), false)
+}
+
+func TestHandleTenantForEtcdKey(t *testing.T) {
+	assert.Equal(t, "a/b/c", HandleTenantForEtcdKey("a", "b", "c"))
+
+	assert.Equal(t, "a/b", HandleTenantForEtcdKey("a", "", "b"))
+
+	assert.Equal(t, "a/b", HandleTenantForEtcdKey("a", "b", ""))
+
+	assert.Equal(t, "a", HandleTenantForEtcdKey("a", "", ""))
+}
+
+func TestIsRevoke(t *testing.T) {
+	assert.Equal(t, true, IsRevoke(milvuspb.OperatePrivilegeType_Revoke))
+	assert.Equal(t, false, IsRevoke(milvuspb.OperatePrivilegeType_Grant))
+}
+
+func TestIsGrant(t *testing.T) {
+	assert.Equal(t, true, IsGrant(milvuspb.OperatePrivilegeType_Grant))
+	assert.Equal(t, false, IsGrant(milvuspb.OperatePrivilegeType_Revoke))
+}
+
+func TestUserRoleCache(t *testing.T) {
+	user, role := "foo", "root"
+	cache := EncodeUserRoleCache(user, role)
+	assert.Equal(t, fmt.Sprintf("%s/%s", user, role), cache)
+	u, r, err := DecodeUserRoleCache(cache)
+	assert.Equal(t, user, u)
+	assert.Equal(t, role, r)
+	assert.NoError(t, err)
+
+	_, _, err = DecodeUserRoleCache("foo")
+	assert.Error(t, err)
+}

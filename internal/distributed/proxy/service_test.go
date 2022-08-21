@@ -218,6 +218,10 @@ func (m *MockRootCoord) SegmentFlushCompleted(ctx context.Context, in *datapb.Se
 	return nil, nil
 }
 
+func (m *MockRootCoord) ShowConfigurations(ctx context.Context, req *internalpb.ShowConfigurationsRequest) (*internalpb.ShowConfigurationsResponse, error) {
+	return nil, nil
+}
+
 func (m *MockRootCoord) GetMetrics(ctx context.Context, req *milvuspb.GetMetricsRequest) (*milvuspb.GetMetricsResponse, error) {
 	return nil, nil
 }
@@ -255,6 +259,38 @@ func (m *MockRootCoord) ListCredUsers(ctx context.Context, req *milvuspb.ListCre
 }
 
 func (m *MockRootCoord) GetCredential(ctx context.Context, req *rootcoordpb.GetCredentialRequest) (*rootcoordpb.GetCredentialResponse, error) {
+	return nil, nil
+}
+
+func (m *MockRootCoord) CreateRole(ctx context.Context, req *milvuspb.CreateRoleRequest) (*commonpb.Status, error) {
+	return nil, nil
+}
+
+func (m *MockRootCoord) DropRole(ctx context.Context, in *milvuspb.DropRoleRequest) (*commonpb.Status, error) {
+	return nil, nil
+}
+
+func (m *MockRootCoord) OperateUserRole(ctx context.Context, in *milvuspb.OperateUserRoleRequest) (*commonpb.Status, error) {
+	return nil, nil
+}
+
+func (m *MockRootCoord) SelectRole(ctx context.Context, in *milvuspb.SelectRoleRequest) (*milvuspb.SelectRoleResponse, error) {
+	return nil, nil
+}
+
+func (m *MockRootCoord) SelectUser(ctx context.Context, in *milvuspb.SelectUserRequest) (*milvuspb.SelectUserResponse, error) {
+	return nil, nil
+}
+
+func (m *MockRootCoord) OperatePrivilege(ctx context.Context, in *milvuspb.OperatePrivilegeRequest) (*commonpb.Status, error) {
+	return nil, nil
+}
+
+func (m *MockRootCoord) SelectGrant(ctx context.Context, in *milvuspb.SelectGrantRequest) (*milvuspb.SelectGrantResponse, error) {
+	return nil, nil
+}
+
+func (m *MockRootCoord) ListPolicy(ctx context.Context, in *internalpb.ListPolicyRequest) (*internalpb.ListPolicyResponse, error) {
 	return nil, nil
 }
 
@@ -300,6 +336,10 @@ func (m *MockIndexCoord) GetIndexStates(ctx context.Context, req *indexpb.GetInd
 }
 
 func (m *MockIndexCoord) GetIndexFilePaths(ctx context.Context, req *indexpb.GetIndexFilePathsRequest) (*indexpb.GetIndexFilePathsResponse, error) {
+	return nil, nil
+}
+
+func (m *MockIndexCoord) ShowConfigurations(ctx context.Context, req *internalpb.ShowConfigurationsRequest) (*internalpb.ShowConfigurationsResponse, error) {
 	return nil, nil
 }
 
@@ -412,6 +452,10 @@ func (m *MockQueryCoord) GetShardLeaders(ctx context.Context, req *querypb.GetSh
 	return nil, nil
 }
 
+func (m *MockQueryCoord) ShowConfigurations(ctx context.Context, req *internalpb.ShowConfigurationsRequest) (*internalpb.ShowConfigurationsResponse, error) {
+	return nil, nil
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 type MockDataCoord struct {
 	MockBase
@@ -483,6 +527,10 @@ func (m *MockDataCoord) GetRecoveryInfo(ctx context.Context, req *datapb.GetReco
 }
 
 func (m *MockDataCoord) GetFlushedSegments(ctx context.Context, req *datapb.GetFlushedSegmentsRequest) (*datapb.GetFlushedSegmentsResponse, error) {
+	return nil, nil
+}
+
+func (m *MockDataCoord) ShowConfigurations(ctx context.Context, req *internalpb.ShowConfigurationsRequest) (*internalpb.ShowConfigurationsResponse, error) {
 	return nil, nil
 }
 
@@ -801,6 +849,38 @@ func (m *MockProxy) DeleteCredential(ctx context.Context, req *milvuspb.DeleteCr
 }
 
 func (m *MockProxy) ListCredUsers(ctx context.Context, req *milvuspb.ListCredUsersRequest) (*milvuspb.ListCredUsersResponse, error) {
+	return nil, nil
+}
+
+func (m *MockProxy) CreateRole(ctx context.Context, req *milvuspb.CreateRoleRequest) (*commonpb.Status, error) {
+	return nil, nil
+}
+
+func (m *MockProxy) DropRole(ctx context.Context, req *milvuspb.DropRoleRequest) (*commonpb.Status, error) {
+	return nil, nil
+}
+
+func (m *MockProxy) OperateUserRole(ctx context.Context, req *milvuspb.OperateUserRoleRequest) (*commonpb.Status, error) {
+	return nil, nil
+}
+
+func (m *MockProxy) SelectRole(ctx context.Context, req *milvuspb.SelectRoleRequest) (*milvuspb.SelectRoleResponse, error) {
+	return nil, nil
+}
+
+func (m *MockProxy) SelectUser(ctx context.Context, req *milvuspb.SelectUserRequest) (*milvuspb.SelectUserResponse, error) {
+	return nil, nil
+}
+
+func (m *MockProxy) OperatePrivilege(ctx context.Context, req *milvuspb.OperatePrivilegeRequest) (*commonpb.Status, error) {
+	return nil, nil
+}
+
+func (m *MockProxy) SelectGrant(ctx context.Context, in *milvuspb.SelectGrantRequest) (*milvuspb.SelectGrantResponse, error) {
+	return nil, nil
+}
+
+func (m *MockProxy) RefreshPolicyInfoCache(ctx context.Context, req *proxypb.RefreshPolicyInfoCacheRequest) (*commonpb.Status, error) {
 	return nil, nil
 }
 
@@ -1181,6 +1261,46 @@ func Test_NewServer(t *testing.T) {
 
 	t.Run("UpdateCredentialCache", func(t *testing.T) {
 		_, err := server.UpdateCredentialCache(ctx, nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("CreateRole", func(t *testing.T) {
+		_, err := server.CreateRole(ctx, nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("DropRole", func(t *testing.T) {
+		_, err := server.DropRole(ctx, nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("OperateUserRole", func(t *testing.T) {
+		_, err := server.OperateUserRole(ctx, nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("SelectRole", func(t *testing.T) {
+		_, err := server.SelectRole(ctx, nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("SelectUser", func(t *testing.T) {
+		_, err := server.SelectUser(ctx, nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("OperatePrivilege", func(t *testing.T) {
+		_, err := server.OperatePrivilege(ctx, nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("SelectGrant", func(t *testing.T) {
+		_, err := server.SelectGrant(ctx, nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("RefreshPrivilegeInfoCache", func(t *testing.T) {
+		_, err := server.RefreshPolicyInfoCache(ctx, nil)
 		assert.Nil(t, err)
 	})
 

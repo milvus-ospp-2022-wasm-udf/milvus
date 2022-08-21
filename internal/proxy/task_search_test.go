@@ -123,7 +123,7 @@ func TestSearchTask_PreExecute(t *testing.T) {
 	defer rc.Stop()
 	require.NoError(t, err)
 	mgr := newShardClientMgr()
-	err = InitMetaCache(rc, qc, mgr)
+	err = InitMetaCache(ctx, rc, qc, mgr)
 	require.NoError(t, err)
 
 	err = qc.Start()
@@ -217,70 +217,6 @@ func TestSearchTask_PreExecute(t *testing.T) {
 		qc.ResetShowPartitionsFunc()
 	})
 
-	t.Run("invalid key value pairs", func(t *testing.T) {
-		spNoTopk := []*commonpb.KeyValuePair{{
-			Key:   AnnsFieldKey,
-			Value: testFloatVecField}}
-
-		spInvalidTopk := append(spNoTopk, &commonpb.KeyValuePair{
-			Key:   TopKKey,
-			Value: "invalid",
-		})
-
-		spNoMetricType := append(spNoTopk, &commonpb.KeyValuePair{
-			Key:   TopKKey,
-			Value: "10",
-		})
-
-		spNoSearchParams := append(spNoMetricType, &commonpb.KeyValuePair{
-			Key:   MetricTypeKey,
-			Value: distance.L2,
-		})
-
-		spNoRoundDecimal := append(spNoSearchParams, &commonpb.KeyValuePair{
-			Key:   SearchParamsKey,
-			Value: `{"nprobe": 10}`,
-		})
-
-		spInvalidRoundDecimal := append(spNoRoundDecimal, &commonpb.KeyValuePair{
-			Key:   RoundDecimalKey,
-			Value: "invalid",
-		})
-
-		tests := []struct {
-			description   string
-			invalidParams []*commonpb.KeyValuePair
-		}{
-			{"No_topk", spNoTopk},
-			{"Invalid_topk", spInvalidTopk},
-			{"No_Metric_type", spNoMetricType},
-			{"No_search_params", spNoSearchParams},
-			{"no_round_decimal", spNoRoundDecimal},
-			{"Invalid_round_decimal", spInvalidRoundDecimal},
-		}
-
-		for _, test := range tests {
-			t.Run(test.description, func(t *testing.T) {
-				collName := "collection_" + test.description
-				createColl(t, collName, rc)
-				collID, err := globalMetaCache.GetCollectionID(context.TODO(), collName)
-				require.NoError(t, err)
-				task := getSearchTask(t, collName)
-				task.request.DslType = commonpb.DslType_BoolExprV1
-
-				status, err := qc.LoadCollection(ctx, &querypb.LoadCollectionRequest{
-					Base: &commonpb.MsgBase{
-						MsgType: commonpb.MsgType_LoadCollection,
-					},
-					CollectionID: collID,
-				})
-				require.NoError(t, err)
-				require.Equal(t, commonpb.ErrorCode_Success, status.GetErrorCode())
-				assert.Error(t, task.PreExecute(ctx))
-			})
-		}
-	})
-
 	t.Run("search with timeout", func(t *testing.T) {
 		collName := "search_with_timeout" + funcutil.GenRandomStr()
 		createColl(t, collName, rc)
@@ -335,7 +271,7 @@ func TestSearchTaskV2_Execute(t *testing.T) {
 	require.NoError(t, err)
 	defer rc.Stop()
 	mgr := newShardClientMgr()
-	err = InitMetaCache(rc, qc, mgr)
+	err = InitMetaCache(ctx, rc, qc, mgr)
 	require.NoError(t, err)
 
 	err = qc.Start()
@@ -442,7 +378,7 @@ func TestSearchTaskWithInvalidRoundDecimal(t *testing.T) {
 	//
 	// ctx := context.Background()
 	//
-	// err = InitMetaCache(rc)
+	// err = InitMetaCache(ctx, rc)
 	// assert.NoError(t, err)
 	//
 	// shardsNum := int32(2)
@@ -685,7 +621,7 @@ func TestSearchTaskV2_all(t *testing.T) {
 	//
 	// ctx := context.Background()
 	//
-	// err = InitMetaCache(rc)
+	// err = InitMetaCache(ctx, rc)
 	// assert.NoError(t, err)
 	//
 	// shardsNum := int32(2)
@@ -930,7 +866,7 @@ func TestSearchTaskV2_7803_reduce(t *testing.T) {
 	//
 	// ctx := context.Background()
 	//
-	// err = InitMetaCache(rc)
+	// err = InitMetaCache(ctx, rc)
 	// assert.NoError(t, err)
 	//
 	// shardsNum := int32(2)
@@ -1619,7 +1555,7 @@ func TestSearchTask_ErrExecute(t *testing.T) {
 	qc.Start()
 	defer qc.Stop()
 
-	err = InitMetaCache(rc, qc, mgr)
+	err = InitMetaCache(ctx, rc, qc, mgr)
 	assert.NoError(t, err)
 
 	fieldName2Types := map[string]schemapb.DataType{
@@ -1733,4 +1669,61 @@ func TestSearchTask_ErrExecute(t *testing.T) {
 	}
 	qn.withSearchResult = result1
 	assert.NoError(t, task.Execute(ctx))
+}
+
+func TestTaskSearch_parseQueryInfo(t *testing.T) {
+	t.Run("parseQueryInfo error", func(t *testing.T) {
+		spNoTopk := []*commonpb.KeyValuePair{{
+			Key:   AnnsFieldKey,
+			Value: testFloatVecField}}
+
+		spInvalidTopk := append(spNoTopk, &commonpb.KeyValuePair{
+			Key:   TopKKey,
+			Value: "invalid",
+		})
+
+		spNoMetricType := append(spNoTopk, &commonpb.KeyValuePair{
+			Key:   TopKKey,
+			Value: "10",
+		})
+
+		spNoSearchParams := append(spNoMetricType, &commonpb.KeyValuePair{
+			Key:   MetricTypeKey,
+			Value: distance.L2,
+		})
+		noRoundDecimal := append(spNoSearchParams, &commonpb.KeyValuePair{
+			Key:   SearchParamsKey,
+			Value: `{"nprobe": 10}`,
+		})
+
+		spInvalidRoundDecimal2 := append(noRoundDecimal, &commonpb.KeyValuePair{
+			Key:   RoundDecimalKey,
+			Value: "1000",
+		})
+
+		spInvalidRoundDecimal := append(noRoundDecimal, &commonpb.KeyValuePair{
+			Key:   RoundDecimalKey,
+			Value: "invalid",
+		})
+
+		tests := []struct {
+			description   string
+			invalidParams []*commonpb.KeyValuePair
+		}{
+			{"No_topk", spNoTopk},
+			{"Invalid_topk", spInvalidTopk},
+			{"No_Metric_type", spNoMetricType},
+			{"No_search_params", spNoSearchParams},
+			{"Invalid_round_decimal", spInvalidRoundDecimal},
+			{"Invalid_round_decimal_1000", spInvalidRoundDecimal2},
+		}
+
+		for _, test := range tests {
+			t.Run(test.description, func(t *testing.T) {
+				info, err := parseQueryInfo(test.invalidParams)
+				assert.Error(t, err)
+				assert.Nil(t, info)
+			})
+		}
+	})
 }

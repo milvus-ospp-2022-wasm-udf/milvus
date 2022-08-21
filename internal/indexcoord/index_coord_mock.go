@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/milvus-io/milvus/internal/kv"
 
@@ -236,6 +237,25 @@ func (icm *Mock) GetIndexFilePaths(ctx context.Context, req *indexpb.GetIndexFil
 	}, nil
 }
 
+//ShowConfigurations returns the configurations of Mock indexNode matching req.Pattern
+func (icm *Mock) ShowConfigurations(ctx context.Context, req *internalpb.ShowConfigurationsRequest) (*internalpb.ShowConfigurationsResponse, error) {
+	if icm.Failure {
+		return &internalpb.ShowConfigurationsResponse{
+			Status: &commonpb.Status{
+				ErrorCode: commonpb.ErrorCode_UnexpectedError,
+			},
+			Configuations: nil,
+		}, errors.New("IndexCoord Configurations failed")
+	}
+
+	return &internalpb.ShowConfigurationsResponse{
+		Status: &commonpb.Status{
+			ErrorCode: commonpb.ErrorCode_Success,
+		},
+		Configuations: nil,
+	}, nil
+}
+
 // GetMetrics gets the metrics of mocked IndexCoord, if Param `Failure` is true, it will return an error.
 func (icm *Mock) GetMetrics(ctx context.Context, request *milvuspb.GetMetricsRequest) (*milvuspb.GetMetricsResponse, error) {
 	if icm.Failure {
@@ -421,7 +441,7 @@ type chunkManagerMock struct {
 	storage.ChunkManager
 
 	removeWithPrefix func(string) error
-	listWithPrefix   func(string, bool) ([]string, error)
+	listWithPrefix   func(string, bool) ([]string, []time.Time, error)
 	remove           func(string) error
 }
 
@@ -429,7 +449,7 @@ func (cmm *chunkManagerMock) RemoveWithPrefix(prefix string) error {
 	return cmm.removeWithPrefix(prefix)
 }
 
-func (cmm *chunkManagerMock) ListWithPrefix(prefix string, recursive bool) ([]string, error) {
+func (cmm *chunkManagerMock) ListWithPrefix(prefix string, recursive bool) ([]string, []time.Time, error) {
 	return cmm.listWithPrefix(prefix, recursive)
 }
 

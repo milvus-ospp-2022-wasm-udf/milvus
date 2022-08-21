@@ -110,7 +110,6 @@ generate_max_float_query_data(int all_nq, int max_float_nq) {
     }
     auto blob = raw_group.SerializeAsString();
     return blob;
-
 }
 
 std::string
@@ -1155,14 +1154,12 @@ TEST(CApiTest, ReudceNullResult) {
         EXPECT_EQ(size, num_queries / 2);
 
         DeleteSearchResult(res);
-
     }
 
     DeleteSearchPlan(plan);
     DeletePlaceholderGroup(placeholderGroup);
     DeleteCollection(collection);
     DeleteSegment(segment);
-
 }
 
 TEST(CApiTest, ReduceRemoveDuplicates) {
@@ -2765,7 +2762,8 @@ TEST(CApiTest, Indexing_With_binary_Predicate_Term) {
 
     auto search_result_on_bigIndex = (SearchResult*)c_search_result_on_bigIndex;
     for (int i = 0; i < num_queries; ++i) {
-        auto offset = search_result_on_bigIndex->get_result_count(i);
+        ASSERT_EQ(search_result_on_bigIndex->topk_per_nq_prefix_sum_.size(), search_result_on_bigIndex->total_nq_ + 1);
+        auto offset = search_result_on_bigIndex->topk_per_nq_prefix_sum_[i];
         ASSERT_EQ(search_result_on_bigIndex->seg_offsets_[offset], 42000 + i);
         ASSERT_EQ(search_result_on_bigIndex->distances_[offset], search_result_on_raw_index->distances_[i * TOPK]);
     }
@@ -2930,7 +2928,8 @@ TEST(CApiTest, Indexing_Expr_With_binary_Predicate_Term) {
 
     auto search_result_on_bigIndex = (SearchResult*)c_search_result_on_bigIndex;
     for (int i = 0; i < num_queries; ++i) {
-        auto offset = search_result_on_bigIndex->get_result_count(i);
+        ASSERT_EQ(search_result_on_bigIndex->topk_per_nq_prefix_sum_.size(), search_result_on_bigIndex->total_nq_ + 1);
+        auto offset = search_result_on_bigIndex->topk_per_nq_prefix_sum_[i];
         ASSERT_EQ(search_result_on_bigIndex->seg_offsets_[offset], 42000 + i);
         ASSERT_EQ(search_result_on_bigIndex->distances_[offset], search_result_on_raw_index->distances_[i * TOPK]);
     }

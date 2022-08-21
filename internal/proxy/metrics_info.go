@@ -21,15 +21,14 @@ import (
 	"sync"
 
 	"github.com/milvus-io/milvus/internal/proto/commonpb"
-
-	"github.com/milvus-io/milvus/internal/util/typeutil"
-
-	"github.com/milvus-io/milvus/internal/util/metricsinfo"
-
+	"github.com/milvus-io/milvus/internal/proto/internalpb"
 	"github.com/milvus-io/milvus/internal/proto/milvuspb"
+	"github.com/milvus-io/milvus/internal/util/metricsinfo"
+	"github.com/milvus-io/milvus/internal/util/typeutil"
 )
 
 type getMetricsFuncType func(ctx context.Context, request *milvuspb.GetMetricsRequest) (*milvuspb.GetMetricsResponse, error)
+type showConfigurationsFuncType func(ctx context.Context, request *internalpb.ShowConfigurationsRequest) (*internalpb.ShowConfigurationsResponse, error)
 
 // getSystemInfoMetrics returns the system information metrics.
 func getSystemInfoMetrics(
@@ -107,7 +106,7 @@ func getSystemInfoMetrics(
 		defer wg.Done()
 
 		queryCoordResp, queryCoordErr = node.queryCoord.GetMetrics(ctx, request)
-		queryCoordRoleName = queryCoordResp.ComponentName
+		queryCoordRoleName = queryCoordResp.GetComponentName()
 		queryCoordErr = metricsinfo.UnmarshalTopology(queryCoordResp.Response, &queryCoordTopology)
 	}()
 
@@ -116,7 +115,7 @@ func getSystemInfoMetrics(
 		defer wg.Done()
 
 		dataCoordResp, dataCoordErr = node.dataCoord.GetMetrics(ctx, request)
-		dataCoordRoleName = dataCoordResp.ComponentName
+		dataCoordRoleName = dataCoordResp.GetComponentName()
 		dataCoordErr = metricsinfo.UnmarshalTopology(dataCoordResp.Response, &dataCoordTopology)
 	}()
 
@@ -125,7 +124,7 @@ func getSystemInfoMetrics(
 		defer wg.Done()
 
 		indexCoordResp, indexCoordErr = node.indexCoord.GetMetrics(ctx, request)
-		indexCoordRoleName = indexCoordResp.ComponentName
+		indexCoordRoleName = indexCoordResp.GetComponentName()
 		indexCoordErr = metricsinfo.UnmarshalTopology(indexCoordResp.Response, &indexCoordTopology)
 	}()
 
@@ -134,7 +133,7 @@ func getSystemInfoMetrics(
 		defer wg.Done()
 
 		rootCoordResp, rootCoordErr = node.rootCoord.GetMetrics(ctx, request)
-		rootCoordRoleName = rootCoordResp.ComponentName
+		rootCoordRoleName = rootCoordResp.GetComponentName()
 		rootCoordErr = metricsinfo.UnmarshalTopology(rootCoordResp.Response, &rootCoordTopology)
 	}()
 

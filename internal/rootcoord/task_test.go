@@ -3,23 +3,20 @@ package rootcoord
 import (
 	"context"
 	"errors"
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
-
-	"github.com/milvus-io/milvus/internal/proto/milvuspb"
-
-	"github.com/milvus-io/milvus/internal/proto/schemapb"
-
 	"github.com/stretchr/testify/assert"
 
-	"github.com/milvus-io/milvus/internal/proto/etcdpb"
 	"github.com/milvus-io/milvus/internal/util/typeutil"
 
+	"github.com/milvus-io/milvus/internal/metastore/model"
 	"github.com/milvus-io/milvus/internal/proto/commonpb"
+	"github.com/milvus-io/milvus/internal/proto/internalpb"
+	"github.com/milvus-io/milvus/internal/proto/milvuspb"
 	"github.com/milvus-io/milvus/internal/proto/rootcoordpb"
+	"github.com/milvus-io/milvus/internal/proto/schemapb"
+	"github.com/milvus-io/milvus/internal/util/dependency"
 )
 
 func TestDescribeSegmentReqTask_Type(t *testing.T) {
@@ -74,48 +71,53 @@ func TestDescribeSegmentsReqTask_Execute(t *testing.T) {
 		return []typeutil.UniqueID{segID}, nil
 	}
 	c.MetaTable = &MetaTable{
-		segID2IndexMeta: map[typeutil.UniqueID]map[typeutil.UniqueID]etcdpb.SegmentIndexInfo{},
+		segID2IndexID: make(map[typeutil.UniqueID]typeutil.UniqueID, 1),
 	}
 	assert.NoError(t, tsk.Execute(context.Background()))
 
-	// index not found in meta. no return error
+	// index not found in meta
 	c.MetaTable = &MetaTable{
-		segID2IndexMeta: map[typeutil.UniqueID]map[typeutil.UniqueID]etcdpb.SegmentIndexInfo{
-			segID: {
-				indexID: {
-					CollectionID: collID,
-					PartitionID:  partID,
-					SegmentID:    segID,
-					FieldID:      fieldID,
-					IndexID:      indexID,
-					BuildID:      buildID,
-					EnableIndex:  true,
+		segID2IndexID: map[typeutil.UniqueID]typeutil.UniqueID{segID: indexID},
+		indexID2Meta: map[typeutil.UniqueID]*model.Index{
+			indexID: {
+				CollectionID: collID,
+				FieldID:      fieldID,
+				IndexID:      indexID,
+				SegmentIndexes: map[int64]model.SegmentIndex{
+					segID + 1: {
+						Segment: model.Segment{
+							SegmentID:   segID,
+							PartitionID: partID,
+						},
+						BuildID:     buildID,
+						EnableIndex: true,
+					},
 				},
 			},
 		},
 	}
-	assert.NoError(t, tsk.Execute(context.Background()))
+	assert.Error(t, tsk.Execute(context.Background()))
 
 	// success.
 	c.MetaTable = &MetaTable{
-		segID2IndexMeta: map[typeutil.UniqueID]map[typeutil.UniqueID]etcdpb.SegmentIndexInfo{
-			segID: {
-				indexID: {
-					CollectionID: collID,
-					PartitionID:  partID,
-					SegmentID:    segID,
-					FieldID:      fieldID,
-					IndexID:      indexID,
-					BuildID:      buildID,
-					EnableIndex:  true,
-				},
-			},
-		},
-		indexID2Meta: map[typeutil.UniqueID]etcdpb.IndexInfo{
+		segID2IndexID: map[typeutil.UniqueID]typeutil.UniqueID{segID: indexID},
+		indexID2Meta: map[typeutil.UniqueID]*model.Index{
 			indexID: {
-				IndexName:   indexName,
-				IndexID:     indexID,
-				IndexParams: nil,
+				CollectionID: collID,
+				FieldID:      fieldID,
+				IndexID:      indexID,
+				IndexName:    indexName,
+				IndexParams:  nil,
+				SegmentIndexes: map[int64]model.SegmentIndex{
+					segID: {
+						Segment: model.Segment{
+							SegmentID:   segID,
+							PartitionID: partID,
+						},
+						BuildID:     buildID,
+						EnableIndex: true,
+					},
+				},
 			},
 		},
 	}
@@ -154,29 +156,40 @@ func TestCreateCollectionReqTask_Execute_hasSystemFields(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestCreateFunctionReqTask_Execute(t *testing.T) {
-	str, err := os.Getwd()
+func TestCreateCollectionReqTask_ChannelMismatch(t *testing.T) {
+	schema := &schemapb.CollectionSchema{Name: "test", Fields: []*schemapb.FieldSchema{{Name: "f1"}}}
+	marshaledSchema, err := proto.Marshal(schema)
 	assert.NoError(t, err)
-	wasm, err := ioutil.ReadFile(str + "/wasmudf/simple.wasm")
+	msFactory := dependency.NewDefaultFactory(true)
+
+	Params.Init()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	core, err := NewCore(ctx, msFactory)
 	assert.NoError(t, err)
-	task := &CreateFunctionReqTask{
-		Req: &milvuspb.CreateFunctionRequest{
-			Base:           &commonpb.MsgBase{MsgType: commonpb.MsgType_CreateFunction},
-			FunctionName:   "simple",
-			WasmBinaryFile: wasm,
+	core.IDAllocator = func(count uint32) (typeutil.UniqueID, typeutil.UniqueID, error) {
+		return 0, 0, nil
+	}
+	core.chanTimeTick = newTimeTickSync(core.ctx, 1, core.factory, nil)
+	core.TSOAllocator = func(count uint32) (typeutil.Timestamp, error) {
+		return 0, nil
+	}
+	core.SendDdCreateCollectionReq = func(context.Context, *internalpb.CreateCollectionRequest, []string) (map[string][]byte, error) {
+		return map[string][]byte{}, nil
+	}
+
+	// set RootCoordDml="" to trigger a error for code coverage
+	Params.CommonCfg.RootCoordDml = ""
+	task := &CreateCollectionReqTask{
+		baseReqTask: baseReqTask{
+			core: core,
+		},
+		Req: &milvuspb.CreateCollectionRequest{
+			Base:           &commonpb.MsgBase{MsgType: commonpb.MsgType_CreateCollection},
+			CollectionName: "test",
+			Schema:         marshaledSchema,
 		},
 	}
 	err = task.Execute(context.Background())
-	assert.NoError(t, err)
-}
-
-func TestDropFunctionReqTask_Execute(t *testing.T) {
-	task := &DropFunctionReqTask{
-		Req: &milvuspb.DropFunctionRequest{
-			Base:         &commonpb.MsgBase{MsgType: commonpb.MsgType_DropFunction},
-			FunctionName: "simple",
-		},
-	}
-	err := task.Execute(context.Background())
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
