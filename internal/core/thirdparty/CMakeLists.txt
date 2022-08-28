@@ -79,3 +79,7 @@ endif()
 #if ( LINUX )
 #    add_subdirectory( rapidxml )
 #endif()
+
+# ******************************* Thirdparty wasmtime ********************************
+add_subdirectory( wasmtime )
+
