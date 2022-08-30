@@ -887,18 +887,13 @@ func (v *ParserVisitor) VisitBitOr(ctx *parser.BitOrContext) interface{} {
 func (v *ParserVisitor) VisitUdf(ctx *parser.UdfContext) interface{} {
 	// return fmt.Errorf("Udf is not supported: %s", ctx.GetText())
 	funcName, err := strconv.Unquote(ctx.StringLiteral().GetText())
-
 	if err != nil {
 		return err
 	}
-
-	// TODO (wangziyu): get udf wasm file from rootcoord
-
+	// TODO (wang ziyu): get udf wasm file from rootcoord
 	allExpr := ctx.AllExpr()
 	lenOfAllExpr := len(allExpr)
-	values := make([]*planpb.GenericValue, 0, lenOfAllExpr)
-	columns := make([]*planpb.ColumnInfo, 0, lenOfAllExpr)
-
+	udfArgs := make([]*planpb.UdfArg, 0, lenOfAllExpr)
 	// parser udf arguments
 	for i := 0; i < lenOfAllExpr; i++ {
 		child := allExpr[i].Accept(v)
@@ -909,26 +904,36 @@ func (v *ParserVisitor) VisitUdf(ctx *parser.UdfContext) interface{} {
 		childExpr := getExpr(child)
 		column := toColumnInfo(childExpr)
 		if column != nil {
-			columns = append(columns, column)
+			arg := &planpb.UdfArg{
+				Val: &planpb.UdfArg_ColumnInfo{
+					ColumnInfo: column,
+				},
+			}
+			udfArgs = append(udfArgs, arg)
 		}
 
 		childValue := getGenericValue(child)
 		if childValue != nil {
-			values = append(values, childValue)
+			arg := &planpb.UdfArg{
+				Val: &planpb.UdfArg_Value{
+					Value: childValue,
+				},
+			}
+			udfArgs = append(udfArgs, arg)
 		}
 
 		if column == nil && childValue == nil {
 			return fmt.Errorf("udf argument is invalid: %s", ctx.GetText())
 		}
-
 	}
 
+	wasmBody := []byte("not implemented")
 	expr := &planpb.Expr{
 		Expr: &planpb.Expr_UdfExpr{
 			UdfExpr: &planpb.UdfExpr{
 				UdfFuncName: funcName,
-				ColumnInfo:  columns,
-				Values:      values,
+				UdfArgs:     udfArgs,
+				WasmBody:    wasmBody,
 			},
 		},
 	}
