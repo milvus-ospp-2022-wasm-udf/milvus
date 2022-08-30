@@ -24,7 +24,8 @@ extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::
 extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_GenericValue_plan_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_QueryInfo_plan_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_TermExpr_plan_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_UdfExpr_plan_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_UdfArg_plan_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_UdfExpr_plan_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_UnaryRangeExpr_plan_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ValueExpr_plan_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_plan_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_VectorANNS_plan_2eproto;
@@ -91,6 +92,12 @@ class BinaryArithOpEvalRangeExprDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<BinaryArithOpEvalRangeExpr> _instance;
 } _BinaryArithOpEvalRangeExpr_default_instance_;
+class UdfArgDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<UdfArg> _instance;
+  const ::milvus::proto::plan::GenericValue* value_;
+  const ::milvus::proto::plan::ColumnInfo* column_info_;
+} _UdfArg_default_instance_;
 class UdfExprDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<UdfExpr> _instance;
@@ -315,6 +322,22 @@ static void InitDefaultsscc_info_TermExpr_plan_2eproto() {
       &scc_info_ColumnInfo_plan_2eproto.base,
       &scc_info_GenericValue_plan_2eproto.base,}};
 
+static void InitDefaultsscc_info_UdfArg_plan_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::milvus::proto::plan::_UdfArg_default_instance_;
+    new (ptr) ::milvus::proto::plan::UdfArg();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::milvus::proto::plan::UdfArg::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_UdfArg_plan_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsscc_info_UdfArg_plan_2eproto}, {
+      &scc_info_GenericValue_plan_2eproto.base,
+      &scc_info_ColumnInfo_plan_2eproto.base,}};
+
 static void InitDefaultsscc_info_UdfExpr_plan_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -326,10 +349,9 @@ static void InitDefaultsscc_info_UdfExpr_plan_2eproto() {
   ::milvus::proto::plan::UdfExpr::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_UdfExpr_plan_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsscc_info_UdfExpr_plan_2eproto}, {
-      &scc_info_ColumnInfo_plan_2eproto.base,
-      &scc_info_GenericValue_plan_2eproto.base,}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_UdfExpr_plan_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsscc_info_UdfExpr_plan_2eproto}, {
+      &scc_info_UdfArg_plan_2eproto.base,}};
 
 static void InitDefaultsscc_info_UnaryRangeExpr_plan_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -378,7 +400,7 @@ static void InitDefaultsscc_info_VectorANNS_plan_2eproto() {
       &scc_info_BinaryArithExpr_plan_2eproto.base,
       &scc_info_QueryInfo_plan_2eproto.base,}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_plan_2eproto[18];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_plan_2eproto[19];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_plan_2eproto[4];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_plan_2eproto = nullptr;
 
@@ -498,13 +520,21 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_plan_2eproto::offsets[] PROTOB
   PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::BinaryArithOpEvalRangeExpr, op_),
   PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::BinaryArithOpEvalRangeExpr, value_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfArg, _internal_metadata_),
+  ~0u,  // no _extensions_
+  PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfArg, _oneof_case_[0]),
+  ~0u,  // no _weak_field_map_
+  offsetof(::milvus::proto::plan::UdfArgDefaultTypeInternal, value_),
+  offsetof(::milvus::proto::plan::UdfArgDefaultTypeInternal, column_info_),
+  PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfArg, val_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfExpr, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfExpr, udf_func_name_),
-  PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfExpr, column_info_),
-  PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfExpr, values_),
+  PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfExpr, udf_args_),
+  PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::UdfExpr, wasm_body_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::milvus::proto::plan::Expr, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -557,10 +587,11 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 88, -1, sizeof(::milvus::proto::plan::BinaryArithOp)},
   { 96, -1, sizeof(::milvus::proto::plan::BinaryArithExpr)},
   { 104, -1, sizeof(::milvus::proto::plan::BinaryArithOpEvalRangeExpr)},
-  { 114, -1, sizeof(::milvus::proto::plan::UdfExpr)},
-  { 122, -1, sizeof(::milvus::proto::plan::Expr)},
-  { 139, -1, sizeof(::milvus::proto::plan::VectorANNS)},
-  { 149, -1, sizeof(::milvus::proto::plan::PlanNode)},
+  { 114, -1, sizeof(::milvus::proto::plan::UdfArg)},
+  { 122, -1, sizeof(::milvus::proto::plan::UdfExpr)},
+  { 130, -1, sizeof(::milvus::proto::plan::Expr)},
+  { 147, -1, sizeof(::milvus::proto::plan::VectorANNS)},
+  { 157, -1, sizeof(::milvus::proto::plan::PlanNode)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -578,6 +609,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::milvus::proto::plan::_BinaryArithOp_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::milvus::proto::plan::_BinaryArithExpr_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::milvus::proto::plan::_BinaryArithOpEvalRangeExpr_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::milvus::proto::plan::_UdfArg_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::milvus::proto::plan::_UdfExpr_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::milvus::proto::plan::_Expr_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::milvus::proto::plan::_VectorANNS_default_instance_),
@@ -637,48 +669,50 @@ const char descriptor_table_protodef_plan_2eproto[] PROTOBUF_SECTION_VARIABLE(pr
   "ht_operand\030\003 \001(\0132\037.milvus.proto.plan.Gen"
   "ericValue\022%\n\002op\030\004 \001(\0162\031.milvus.proto.pla"
   "n.OpType\022.\n\005value\030\005 \001(\0132\037.milvus.proto.p"
-  "lan.GenericValue\"\213\001\n\007UdfExpr\022\025\n\rudf_func"
-  "_name\030\001 \001(\t\0222\n\013column_info\030\002 \003(\0132\035.milvu"
-  "s.proto.plan.ColumnInfo\022/\n\006values\030\003 \003(\0132"
-  "\037.milvus.proto.plan.GenericValueJ\004\010\004\020\007\"\227"
-  "\005\n\004Expr\0220\n\tterm_expr\030\001 \001(\0132\033.milvus.prot"
-  "o.plan.TermExprH\000\0222\n\nunary_expr\030\002 \001(\0132\034."
-  "milvus.proto.plan.UnaryExprH\000\0224\n\013binary_"
-  "expr\030\003 \001(\0132\035.milvus.proto.plan.BinaryExp"
-  "rH\000\0226\n\014compare_expr\030\004 \001(\0132\036.milvus.proto"
-  ".plan.CompareExprH\000\022=\n\020unary_range_expr\030"
-  "\005 \001(\0132!.milvus.proto.plan.UnaryRangeExpr"
-  "H\000\022\?\n\021binary_range_expr\030\006 \001(\0132\".milvus.p"
-  "roto.plan.BinaryRangeExprH\000\022X\n\037binary_ar"
-  "ith_op_eval_range_expr\030\007 \001(\0132-.milvus.pr"
-  "oto.plan.BinaryArithOpEvalRangeExprH\000\022\?\n"
-  "\021binary_arith_expr\030\010 \001(\0132\".milvus.proto."
-  "plan.BinaryArithExprH\000\0222\n\nvalue_expr\030\t \001"
-  "(\0132\034.milvus.proto.plan.ValueExprH\000\0224\n\013co"
-  "lumn_expr\030\n \001(\0132\035.milvus.proto.plan.Colu"
-  "mnExprH\000\022.\n\010udf_expr\030\013 \001(\0132\032.milvus.prot"
-  "o.plan.UdfExprH\000B\006\n\004expr\"\251\001\n\nVectorANNS\022"
-  "\021\n\tis_binary\030\001 \001(\010\022\020\n\010field_id\030\002 \001(\003\022+\n\n"
-  "predicates\030\003 \001(\0132\027.milvus.proto.plan.Exp"
-  "r\0220\n\nquery_info\030\004 \001(\0132\034.milvus.proto.pla"
-  "n.QueryInfo\022\027\n\017placeholder_tag\030\005 \001(\t\"\221\001\n"
-  "\010PlanNode\0224\n\013vector_anns\030\001 \001(\0132\035.milvus."
-  "proto.plan.VectorANNSH\000\022-\n\npredicates\030\002 "
-  "\001(\0132\027.milvus.proto.plan.ExprH\000\022\030\n\020output"
-  "_field_ids\030\003 \003(\003B\006\n\004node*\272\001\n\006OpType\022\013\n\007I"
-  "nvalid\020\000\022\017\n\013GreaterThan\020\001\022\020\n\014GreaterEqua"
-  "l\020\002\022\014\n\010LessThan\020\003\022\r\n\tLessEqual\020\004\022\t\n\005Equa"
-  "l\020\005\022\014\n\010NotEqual\020\006\022\017\n\013PrefixMatch\020\007\022\020\n\014Po"
-  "stfixMatch\020\010\022\t\n\005Match\020\t\022\t\n\005Range\020\n\022\006\n\002In"
-  "\020\013\022\t\n\005NotIn\020\014*G\n\013ArithOpType\022\013\n\007Unknown\020"
-  "\000\022\007\n\003Add\020\001\022\007\n\003Sub\020\002\022\007\n\003Mul\020\003\022\007\n\003Div\020\004\022\007\n"
-  "\003Mod\020\005B3Z1github.com/milvus-io/milvus/in"
-  "ternal/proto/planpbb\006proto3"
+  "lan.GenericValue\"w\n\006UdfArg\0220\n\005value\030\001 \001("
+  "\0132\037.milvus.proto.plan.GenericValueH\000\0224\n\013"
+  "column_info\030\002 \001(\0132\035.milvus.proto.plan.Co"
+  "lumnInfoH\000B\005\n\003val\"`\n\007UdfExpr\022\025\n\rudf_func"
+  "_name\030\001 \001(\t\022+\n\010udf_args\030\002 \003(\0132\031.milvus.p"
+  "roto.plan.UdfArg\022\021\n\twasm_body\030\003 \001(\014\"\227\005\n\004"
+  "Expr\0220\n\tterm_expr\030\001 \001(\0132\033.milvus.proto.p"
+  "lan.TermExprH\000\0222\n\nunary_expr\030\002 \001(\0132\034.mil"
+  "vus.proto.plan.UnaryExprH\000\0224\n\013binary_exp"
+  "r\030\003 \001(\0132\035.milvus.proto.plan.BinaryExprH\000"
+  "\0226\n\014compare_expr\030\004 \001(\0132\036.milvus.proto.pl"
+  "an.CompareExprH\000\022=\n\020unary_range_expr\030\005 \001"
+  "(\0132!.milvus.proto.plan.UnaryRangeExprH\000\022"
+  "\?\n\021binary_range_expr\030\006 \001(\0132\".milvus.prot"
+  "o.plan.BinaryRangeExprH\000\022X\n\037binary_arith"
+  "_op_eval_range_expr\030\007 \001(\0132-.milvus.proto"
+  ".plan.BinaryArithOpEvalRangeExprH\000\022\?\n\021bi"
+  "nary_arith_expr\030\010 \001(\0132\".milvus.proto.pla"
+  "n.BinaryArithExprH\000\0222\n\nvalue_expr\030\t \001(\0132"
+  "\034.milvus.proto.plan.ValueExprH\000\0224\n\013colum"
+  "n_expr\030\n \001(\0132\035.milvus.proto.plan.ColumnE"
+  "xprH\000\022.\n\010udf_expr\030\013 \001(\0132\032.milvus.proto.p"
+  "lan.UdfExprH\000B\006\n\004expr\"\251\001\n\nVectorANNS\022\021\n\t"
+  "is_binary\030\001 \001(\010\022\020\n\010field_id\030\002 \001(\003\022+\n\npre"
+  "dicates\030\003 \001(\0132\027.milvus.proto.plan.Expr\0220"
+  "\n\nquery_info\030\004 \001(\0132\034.milvus.proto.plan.Q"
+  "ueryInfo\022\027\n\017placeholder_tag\030\005 \001(\t\"\221\001\n\010Pl"
+  "anNode\0224\n\013vector_anns\030\001 \001(\0132\035.milvus.pro"
+  "to.plan.VectorANNSH\000\022-\n\npredicates\030\002 \001(\013"
+  "2\027.milvus.proto.plan.ExprH\000\022\030\n\020output_fi"
+  "eld_ids\030\003 \003(\003B\006\n\004node*\272\001\n\006OpType\022\013\n\007Inva"
+  "lid\020\000\022\017\n\013GreaterThan\020\001\022\020\n\014GreaterEqual\020\002"
+  "\022\014\n\010LessThan\020\003\022\r\n\tLessEqual\020\004\022\t\n\005Equal\020\005"
+  "\022\014\n\010NotEqual\020\006\022\017\n\013PrefixMatch\020\007\022\020\n\014Postf"
+  "ixMatch\020\010\022\t\n\005Match\020\t\022\t\n\005Range\020\n\022\006\n\002In\020\013\022"
+  "\t\n\005NotIn\020\014*G\n\013ArithOpType\022\013\n\007Unknown\020\000\022\007"
+  "\n\003Add\020\001\022\007\n\003Sub\020\002\022\007\n\003Mul\020\003\022\007\n\003Div\020\004\022\007\n\003Mo"
+  "d\020\005B3Z1github.com/milvus-io/milvus/inter"
+  "nal/proto/planpbb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_plan_2eproto_deps[1] = {
   &::descriptor_table_schema_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_plan_2eproto_sccs[15] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_plan_2eproto_sccs[16] = {
   &scc_info_BinaryArithExpr_plan_2eproto.base,
   &scc_info_BinaryArithOp_plan_2eproto.base,
   &scc_info_BinaryArithOpEvalRangeExpr_plan_2eproto.base,
@@ -690,6 +724,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_pla
   &scc_info_PlanNode_plan_2eproto.base,
   &scc_info_QueryInfo_plan_2eproto.base,
   &scc_info_TermExpr_plan_2eproto.base,
+  &scc_info_UdfArg_plan_2eproto.base,
   &scc_info_UdfExpr_plan_2eproto.base,
   &scc_info_UnaryRangeExpr_plan_2eproto.base,
   &scc_info_ValueExpr_plan_2eproto.base,
@@ -698,10 +733,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_pla
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_plan_2eproto_once;
 static bool descriptor_table_plan_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_plan_2eproto = {
-  &descriptor_table_plan_2eproto_initialized, descriptor_table_protodef_plan_2eproto, "plan.proto", 3547,
-  &descriptor_table_plan_2eproto_once, descriptor_table_plan_2eproto_sccs, descriptor_table_plan_2eproto_deps, 15, 1,
+  &descriptor_table_plan_2eproto_initialized, descriptor_table_protodef_plan_2eproto, "plan.proto", 3624,
+  &descriptor_table_plan_2eproto_once, descriptor_table_plan_2eproto_sccs, descriptor_table_plan_2eproto_deps, 16, 1,
   schemas, file_default_instances, TableStruct_plan_2eproto::offsets,
-  file_level_metadata_plan_2eproto, 18, file_level_enum_descriptors_plan_2eproto, file_level_service_descriptors_plan_2eproto,
+  file_level_metadata_plan_2eproto, 19, file_level_enum_descriptors_plan_2eproto, file_level_service_descriptors_plan_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -6034,6 +6069,388 @@ void BinaryArithOpEvalRangeExpr::InternalSwap(BinaryArithOpEvalRangeExpr* other)
 
 // ===================================================================
 
+void UdfArg::InitAsDefaultInstance() {
+  ::milvus::proto::plan::_UdfArg_default_instance_.value_ = const_cast< ::milvus::proto::plan::GenericValue*>(
+      ::milvus::proto::plan::GenericValue::internal_default_instance());
+  ::milvus::proto::plan::_UdfArg_default_instance_.column_info_ = const_cast< ::milvus::proto::plan::ColumnInfo*>(
+      ::milvus::proto::plan::ColumnInfo::internal_default_instance());
+}
+class UdfArg::_Internal {
+ public:
+  static const ::milvus::proto::plan::GenericValue& value(const UdfArg* msg);
+  static const ::milvus::proto::plan::ColumnInfo& column_info(const UdfArg* msg);
+};
+
+const ::milvus::proto::plan::GenericValue&
+UdfArg::_Internal::value(const UdfArg* msg) {
+  return *msg->val_.value_;
+}
+const ::milvus::proto::plan::ColumnInfo&
+UdfArg::_Internal::column_info(const UdfArg* msg) {
+  return *msg->val_.column_info_;
+}
+void UdfArg::set_allocated_value(::milvus::proto::plan::GenericValue* value) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  clear_val();
+  if (value) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      value = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, value, submessage_arena);
+    }
+    set_has_value();
+    val_.value_ = value;
+  }
+  // @@protoc_insertion_point(field_set_allocated:milvus.proto.plan.UdfArg.value)
+}
+void UdfArg::set_allocated_column_info(::milvus::proto::plan::ColumnInfo* column_info) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  clear_val();
+  if (column_info) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      column_info = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, column_info, submessage_arena);
+    }
+    set_has_column_info();
+    val_.column_info_ = column_info;
+  }
+  // @@protoc_insertion_point(field_set_allocated:milvus.proto.plan.UdfArg.column_info)
+}
+UdfArg::UdfArg()
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:milvus.proto.plan.UdfArg)
+}
+UdfArg::UdfArg(const UdfArg& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _internal_metadata_(nullptr) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  clear_has_val();
+  switch (from.val_case()) {
+    case kValue: {
+      mutable_value()->::milvus::proto::plan::GenericValue::MergeFrom(from.value());
+      break;
+    }
+    case kColumnInfo: {
+      mutable_column_info()->::milvus::proto::plan::ColumnInfo::MergeFrom(from.column_info());
+      break;
+    }
+    case VAL_NOT_SET: {
+      break;
+    }
+  }
+  // @@protoc_insertion_point(copy_constructor:milvus.proto.plan.UdfArg)
+}
+
+void UdfArg::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_UdfArg_plan_2eproto.base);
+  clear_has_val();
+}
+
+UdfArg::~UdfArg() {
+  // @@protoc_insertion_point(destructor:milvus.proto.plan.UdfArg)
+  SharedDtor();
+}
+
+void UdfArg::SharedDtor() {
+  if (has_val()) {
+    clear_val();
+  }
+}
+
+void UdfArg::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const UdfArg& UdfArg::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_UdfArg_plan_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void UdfArg::clear_val() {
+// @@protoc_insertion_point(one_of_clear_start:milvus.proto.plan.UdfArg)
+  switch (val_case()) {
+    case kValue: {
+      delete val_.value_;
+      break;
+    }
+    case kColumnInfo: {
+      delete val_.column_info_;
+      break;
+    }
+    case VAL_NOT_SET: {
+      break;
+    }
+  }
+  _oneof_case_[0] = VAL_NOT_SET;
+}
+
+
+void UdfArg::Clear() {
+// @@protoc_insertion_point(message_clear_start:milvus.proto.plan.UdfArg)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  clear_val();
+  _internal_metadata_.Clear();
+}
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+const char* UdfArg::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // .milvus.proto.plan.GenericValue value = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ctx->ParseMessage(mutable_value(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // .milvus.proto.plan.ColumnInfo column_info = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ctx->ParseMessage(mutable_column_info(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+bool UdfArg::MergePartialFromCodedStream(
+    ::PROTOBUF_NAMESPACE_ID::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+  // @@protoc_insertion_point(parse_start:milvus.proto.plan.UdfArg)
+  for (;;) {
+    ::std::pair<::PROTOBUF_NAMESPACE_ID::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // .milvus.proto.plan.GenericValue value = 1;
+      case 1: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (10 & 0xFF)) {
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
+               input, mutable_value()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // .milvus.proto.plan.ColumnInfo column_info = 2;
+      case 2: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (18 & 0xFF)) {
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
+               input, mutable_column_info()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:milvus.proto.plan.UdfArg)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:milvus.proto.plan.UdfArg)
+  return false;
+#undef DO_
+}
+#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+
+void UdfArg::SerializeWithCachedSizes(
+    ::PROTOBUF_NAMESPACE_ID::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:milvus.proto.plan.UdfArg)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // .milvus.proto.plan.GenericValue value = 1;
+  if (has_value()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
+      1, _Internal::value(this), output);
+  }
+
+  // .milvus.proto.plan.ColumnInfo column_info = 2;
+  if (has_column_info()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
+      2, _Internal::column_info(this), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:milvus.proto.plan.UdfArg)
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* UdfArg::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:milvus.proto.plan.UdfArg)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // .milvus.proto.plan.GenericValue value = 1;
+  if (has_value()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        1, _Internal::value(this), target);
+  }
+
+  // .milvus.proto.plan.ColumnInfo column_info = 2;
+  if (has_column_info()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        2, _Internal::column_info(this), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:milvus.proto.plan.UdfArg)
+  return target;
+}
+
+size_t UdfArg::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:milvus.proto.plan.UdfArg)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  switch (val_case()) {
+    // .milvus.proto.plan.GenericValue value = 1;
+    case kValue: {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+          *val_.value_);
+      break;
+    }
+    // .milvus.proto.plan.ColumnInfo column_info = 2;
+    case kColumnInfo: {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+          *val_.column_info_);
+      break;
+    }
+    case VAL_NOT_SET: {
+      break;
+    }
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void UdfArg::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:milvus.proto.plan.UdfArg)
+  GOOGLE_DCHECK_NE(&from, this);
+  const UdfArg* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<UdfArg>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:milvus.proto.plan.UdfArg)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:milvus.proto.plan.UdfArg)
+    MergeFrom(*source);
+  }
+}
+
+void UdfArg::MergeFrom(const UdfArg& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:milvus.proto.plan.UdfArg)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  switch (from.val_case()) {
+    case kValue: {
+      mutable_value()->::milvus::proto::plan::GenericValue::MergeFrom(from.value());
+      break;
+    }
+    case kColumnInfo: {
+      mutable_column_info()->::milvus::proto::plan::ColumnInfo::MergeFrom(from.column_info());
+      break;
+    }
+    case VAL_NOT_SET: {
+      break;
+    }
+  }
+}
+
+void UdfArg::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:milvus.proto.plan.UdfArg)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void UdfArg::CopyFrom(const UdfArg& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:milvus.proto.plan.UdfArg)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool UdfArg::IsInitialized() const {
+  return true;
+}
+
+void UdfArg::InternalSwap(UdfArg* other) {
+  using std::swap;
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  swap(val_, other->val_);
+  swap(_oneof_case_[0], other->_oneof_case_[0]);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata UdfArg::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
 void UdfExpr::InitAsDefaultInstance() {
 }
 class UdfExpr::_Internal {
@@ -6048,12 +6465,15 @@ UdfExpr::UdfExpr()
 UdfExpr::UdfExpr(const UdfExpr& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
-      column_info_(from.column_info_),
-      values_(from.values_) {
+      udf_args_(from.udf_args_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   udf_func_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from.udf_func_name().empty()) {
     udf_func_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.udf_func_name_);
+  }
+  wasm_body_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from.wasm_body().empty()) {
+    wasm_body_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.wasm_body_);
   }
   // @@protoc_insertion_point(copy_constructor:milvus.proto.plan.UdfExpr)
 }
@@ -6061,6 +6481,7 @@ UdfExpr::UdfExpr(const UdfExpr& from)
 void UdfExpr::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_UdfExpr_plan_2eproto.base);
   udf_func_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  wasm_body_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 UdfExpr::~UdfExpr() {
@@ -6070,6 +6491,7 @@ UdfExpr::~UdfExpr() {
 
 void UdfExpr::SharedDtor() {
   udf_func_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  wasm_body_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void UdfExpr::SetCachedSize(int size) const {
@@ -6087,9 +6509,9 @@ void UdfExpr::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  column_info_.Clear();
-  values_.Clear();
+  udf_args_.Clear();
   udf_func_name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  wasm_body_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
@@ -6108,28 +6530,23 @@ const char* UdfExpr::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // repeated .milvus.proto.plan.ColumnInfo column_info = 2;
+      // repeated .milvus.proto.plan.UdfArg udf_args = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(add_column_info(), ptr);
+            ptr = ctx->ParseMessage(add_udf_args(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 18);
         } else goto handle_unusual;
         continue;
-      // repeated .milvus.proto.plan.GenericValue values = 3;
+      // bytes wasm_body = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
-          ptr -= 1;
-          do {
-            ptr += 1;
-            ptr = ctx->ParseMessage(add_values(), ptr);
-            CHK_(ptr);
-            if (!ctx->DataAvailable(ptr)) break;
-          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 26);
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(mutable_wasm_body(), ptr, ctx);
+          CHK_(ptr);
         } else goto handle_unusual;
         continue;
       default: {
@@ -6177,22 +6594,22 @@ bool UdfExpr::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .milvus.proto.plan.ColumnInfo column_info = 2;
+      // repeated .milvus.proto.plan.UdfArg udf_args = 2;
       case 2: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (18 & 0xFF)) {
           DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
-                input, add_column_info()));
+                input, add_udf_args()));
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // repeated .milvus.proto.plan.GenericValue values = 3;
+      // bytes wasm_body = 3;
       case 3: {
         if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (26 & 0xFF)) {
-          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
-                input, add_values()));
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_wasm_body()));
         } else {
           goto handle_unusual;
         }
@@ -6236,22 +6653,19 @@ void UdfExpr::SerializeWithCachedSizes(
       1, this->udf_func_name(), output);
   }
 
-  // repeated .milvus.proto.plan.ColumnInfo column_info = 2;
+  // repeated .milvus.proto.plan.UdfArg udf_args = 2;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->column_info_size()); i < n; i++) {
+      n = static_cast<unsigned int>(this->udf_args_size()); i < n; i++) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
       2,
-      this->column_info(static_cast<int>(i)),
+      this->udf_args(static_cast<int>(i)),
       output);
   }
 
-  // repeated .milvus.proto.plan.GenericValue values = 3;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->values_size()); i < n; i++) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3,
-      this->values(static_cast<int>(i)),
-      output);
+  // bytes wasm_body = 3;
+  if (this->wasm_body().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBytesMaybeAliased(
+      3, this->wasm_body(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -6278,20 +6692,19 @@ void UdfExpr::SerializeWithCachedSizes(
         1, this->udf_func_name(), target);
   }
 
-  // repeated .milvus.proto.plan.ColumnInfo column_info = 2;
+  // repeated .milvus.proto.plan.UdfArg udf_args = 2;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->column_info_size()); i < n; i++) {
+      n = static_cast<unsigned int>(this->udf_args_size()); i < n; i++) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        2, this->column_info(static_cast<int>(i)), target);
+        2, this->udf_args(static_cast<int>(i)), target);
   }
 
-  // repeated .milvus.proto.plan.GenericValue values = 3;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->values_size()); i < n; i++) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        3, this->values(static_cast<int>(i)), target);
+  // bytes wasm_body = 3;
+  if (this->wasm_body().size() > 0) {
+    target =
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBytesToArray(
+        3, this->wasm_body(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -6315,25 +6728,14 @@ size_t UdfExpr::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // repeated .milvus.proto.plan.ColumnInfo column_info = 2;
+  // repeated .milvus.proto.plan.UdfArg udf_args = 2;
   {
-    unsigned int count = static_cast<unsigned int>(this->column_info_size());
+    unsigned int count = static_cast<unsigned int>(this->udf_args_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          this->column_info(static_cast<int>(i)));
-    }
-  }
-
-  // repeated .milvus.proto.plan.GenericValue values = 3;
-  {
-    unsigned int count = static_cast<unsigned int>(this->values_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          this->values(static_cast<int>(i)));
+          this->udf_args(static_cast<int>(i)));
     }
   }
 
@@ -6342,6 +6744,13 @@ size_t UdfExpr::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->udf_func_name());
+  }
+
+  // bytes wasm_body = 3;
+  if (this->wasm_body().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
+        this->wasm_body());
   }
 
   int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
@@ -6371,11 +6780,14 @@ void UdfExpr::MergeFrom(const UdfExpr& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  column_info_.MergeFrom(from.column_info_);
-  values_.MergeFrom(from.values_);
+  udf_args_.MergeFrom(from.udf_args_);
   if (from.udf_func_name().size() > 0) {
 
     udf_func_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.udf_func_name_);
+  }
+  if (from.wasm_body().size() > 0) {
+
+    wasm_body_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.wasm_body_);
   }
 }
 
@@ -6400,9 +6812,10 @@ bool UdfExpr::IsInitialized() const {
 void UdfExpr::InternalSwap(UdfExpr* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  CastToBase(&column_info_)->InternalSwap(CastToBase(&other->column_info_));
-  CastToBase(&values_)->InternalSwap(CastToBase(&other->values_));
+  CastToBase(&udf_args_)->InternalSwap(CastToBase(&other->udf_args_));
   udf_func_name_.Swap(&other->udf_func_name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  wasm_body_.Swap(&other->wasm_body_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
 }
 
@@ -8405,6 +8818,9 @@ template<> PROTOBUF_NOINLINE ::milvus::proto::plan::BinaryArithExpr* Arena::Crea
 }
 template<> PROTOBUF_NOINLINE ::milvus::proto::plan::BinaryArithOpEvalRangeExpr* Arena::CreateMaybeMessage< ::milvus::proto::plan::BinaryArithOpEvalRangeExpr >(Arena* arena) {
   return Arena::CreateInternal< ::milvus::proto::plan::BinaryArithOpEvalRangeExpr >(arena);
+}
+template<> PROTOBUF_NOINLINE ::milvus::proto::plan::UdfArg* Arena::CreateMaybeMessage< ::milvus::proto::plan::UdfArg >(Arena* arena) {
+  return Arena::CreateInternal< ::milvus::proto::plan::UdfArg >(arena);
 }
 template<> PROTOBUF_NOINLINE ::milvus::proto::plan::UdfExpr* Arena::CreateMaybeMessage< ::milvus::proto::plan::UdfExpr >(Arena* arena) {
   return Arena::CreateInternal< ::milvus::proto::plan::UdfExpr >(arena);
