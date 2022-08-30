@@ -537,7 +537,7 @@ func Test_handleExpr_17126(t *testing.T) {
 }
 
 // test udf expr
-func TestParseExpr_UDF(t *testing.T) {
+func TestExpr_UDF(t *testing.T) {
 	schema := newTestSchema()
 	helper, err := typeutil.CreateSchemaHelper(schema)
 	assert.NoError(t, err)
