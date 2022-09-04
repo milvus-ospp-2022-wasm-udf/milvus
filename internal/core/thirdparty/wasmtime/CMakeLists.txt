@@ -36,7 +36,6 @@ macro(build_wasmtime)
     endif()
 
     if(BUILD_SHARED_LIBS)
-        # Copy shared library into build directory
         if(WIN32)
             set(WASMTIME_INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     ${WASMTIME_DIR}/target/${WASMTIME_BUILD_TYPE}/wasmtime.dll
@@ -77,16 +76,8 @@ macro(build_wasmtime)
         endif()
     endif()
 
-#    set (WASMTIME_INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#            ${WASMTIME_DIR}/target/${WASMTIME_BUILD_TYPE}/libwasmtime.a
-#            ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libwasmtime.a)
-
-#    set (WASMTIME_INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#            ${WASMTIME_DIR}/target/${WASMTIME_BUILD_TYPE}/libwasmtime.a
-#            ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libwasmtime.a)
     set (WASMTIME_BUILD_COMMAND cargo build ${WASMTIME_BUILD_TYPE_FLAG})
 
-    # TODO add prefix
     ExternalProject_Add(
             wasmtime-crate
             GIT_REPOSITORY      ${WASMTIME_GIT_URL}
@@ -148,30 +139,14 @@ macro(build_wasmtime)
         endif ()
     endif ()
 
-    message(wangziyu
-            ${WASMTIME_DIR}/crates/c-api/include
-            ${WASMTIME_DIR}/crates/c-api/wasm-c-api/include
-            )
     target_include_directories(wasmtime INTERFACE
             ${WASMTIME_DIR}/crates/c-api/include ${WASMTIME_DIR}/crates/c-api/wasm-c-api/include
             )
 
     get_target_property(WASMTIME_INTERFACE_INCLUDE_DIRECTORIES wasmtime INTERFACE_INCLUDE_DIRECTORIES)
-    MESSAGE("wasmtime-crate DOWNLOAD_DIR            ${DOWNLOAD_DIR}")
-    MESSAGE("wasmtime-crate CONFIGURE_COMMAND       ${CONFIGURE_COMMAND}")
-    MESSAGE("wasmtime-crate BUILD_IN_SOURCE         ${BUILD_IN_SOURCE}")
-    MESSAGE("wasmtime-crate BUILD_COMMAND           ${BUILD_COMMAND}")
-    MESSAGE("wasmtime-crate BUILD_BYPRODUCTS        ${BUILD_BYPRODUCTS}")
-    MESSAGE("wasmtime-crate INSTALL_COMMAND         ${INSTALL_COMMAND}")
-    MESSAGE("wasmtime-crate GIT_REPOSITORY          ${GIT_REPOSITORY}")
-    MESSAGE("wasmtime-crate GIT_TAG                 ${GIT_TAG}")
-    MESSAGE("WASMTIME_IMPORTED_LOCATION                       ${SOURCE_DIR}")
-    message("wangziyu wasm find package wasmtime: ")
-    MESSAGE("WASMTIME_INTERFACE_INCLUDE_DIRECTORIES           ${SOURCE_SUBDIR}")
-    message("WASMTIME_INTERFACE_INCLUDE_DIRECTORIES:  ${WASMTIME_INTERFACE_INCLUDE_DIRECTORIES}")
 endmacro()
 
-set(WASMTIME_SOURCE "BUNDLED")
+set(WASMTIME_SOURCE "AUTO")
 if (WASMTIME_SOURCE STREQUAL "AUTO")
     message(STATUS "Using wasmtime form system")
     find_package(wasmtime)
@@ -184,7 +159,7 @@ if (WASMTIME_SOURCE STREQUAL "AUTO")
         build_wasmtime()
     endif ()
 elseif (WASMTIME_SOURCE STREQUAL "BUNDLED")
-    message(STATUS "build wzy wasmtime")
+    message(STATUS "build wasmtime")
     build_wasmtime()
 elseif (WASMTIME_SOURCE STREQUAL "SYSTEM")
     find_package(wasmtime)
