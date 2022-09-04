@@ -9,25 +9,11 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 // or implied. See the License for the specific language governing permissions and limitations under the License
 
-//
-// Created by wzy on 22-8-6.
-//
+#include <gtest/gtest.h>
 
-#ifndef MILVUS_WASMFUNCTION_H
-#define MILVUS_WASMFUNCTION_H
+int
+main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
 
-#include <wasmtime/wasmtime.hh>
-
-class WasmFunction {
-private:
-    wasmtime::Engine *engine;
-    wasmtime::Store *store;
-public:
-    WasmFunction();
-    ~WasmFunction();
-    void runWatFile(const std::string &filename) const;
-    void runWat(const std::string &filename) const;
-};
-
-
-#endif //MILVUS_WASMFUNCTION_H
+    return RUN_ALL_TESTS();
+}

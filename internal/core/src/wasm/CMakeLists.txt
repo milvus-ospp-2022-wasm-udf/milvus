@@ -13,31 +13,18 @@ cmake_minimum_required(VERSION 3.23)
 
 set(CMAKE_CXX_STANDARD 17)
 
-#add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/wasmtime/crates/c-api
-#        ${CMAKE_CURRENT_BINARY_DIR}/wasmtime)
 option( EMBEDDED_MILVUS "Enable embedded Milvus" OFF )
 
 if ( EMBEDDED_MILVUS )
     add_compile_definitions( EMBEDDED_MILVUS )
 endif()
 
-add_executable(TestWasm TestWasm.cpp)
-
-target_include_directories(TestWasm PUBLIC wasmtime)
-target_link_libraries(TestWasm PUBLIC wasmtime)
-
-#WasmFunction
+#WasmFunctionManager
 add_library(
-        wasm_function_obj OBJECT
-        WasmFunction.cpp
+        function_manager_obj OBJECT
+        WasmFunctionManager.cpp
 )
 
-add_executable(TestWasmFunction
-        TestWasmFunction.cpp
-        $<TARGET_OBJECTS:wasm_function_obj>
-)
+add_subdirectory(test)
 
-target_link_libraries(wasm_function_obj PUBLIC wasmtime)
-
-target_include_directories(TestWasmFunction PUBLIC wasmtime)
-target_link_libraries(TestWasmFunction PUBLIC wasmtime)
+target_link_libraries(function_manager_obj PUBLIC wasmtime)
