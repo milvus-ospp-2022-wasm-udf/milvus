@@ -46,8 +46,7 @@
 #include <span>
 #endif
 
-#include "wasmtime.h"
-
+#include <wasmtime.h>
 namespace wasmtime {
 
 #ifdef __cpp_lib_span

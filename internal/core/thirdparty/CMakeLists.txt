@@ -81,6 +81,5 @@ endif()
 #endif()
 
 # ******************************* Thirdparty wasmtime ********************************
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/wasmtime/crates/c-api
-        ${CMAKE_BINARY_DIR}/wasmtime)
+add_subdirectory( wasmtime )
 
