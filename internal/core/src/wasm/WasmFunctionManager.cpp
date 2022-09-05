@@ -60,6 +60,22 @@ std::vector<int> WasmFunctionManager::run(std::string functionName, std::vector<
     return run(module, args);
 }
 
+template<typename T>
+bool
+WasmFunctionManager::runElemFunc(std::string functionName, std::vector<T> args) {
+    auto module = modules.at(functionName);
+    std::vector<wasmtime::Val> argv;
+    for (size_t i = 0; i < args.size(); ++i) {
+        argv.emplace_back(static_cast<int32_t>(args[i]));
+    }
+
+    // the return
+    std::vector<int> result;
+    auto results = module.func.call(store, argv).unwrap();
+
+    return results[0].i32();
+}
+
 std::vector<int> WasmFunctionManager::run(const WasmtimeRunInstance &wasmTimeRunInstance,
                                           std::vector<int> args) {
     // the args which wasm run

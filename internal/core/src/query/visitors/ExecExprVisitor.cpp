@@ -20,6 +20,7 @@
 #include "segcore/SegmentGrowingImpl.h"
 #include "query/Utils.h"
 #include "query/Relational.h"
+#include "wasm/WasmFunctionManager.h"
 
 namespace milvus::query {
 // THIS CONTAINS EXTRA BODY FOR VISITOR
@@ -65,6 +66,14 @@ class ExecExprVisitor : ExprVisitor {
     template <typename CmpFunc>
     auto
     ExecCompareExprDispatcher(CompareExpr& expr, CmpFunc cmp_func) -> BitsetType;
+
+    template <typename T, typename IndexFunc, typename ElementFunc>
+    auto
+    ExecUdfVisitorImpl(FieldId field_id, IndexFunc index_func, ElementFunc element_func) -> BitsetType;
+
+    template <typename T>
+    auto
+    ExecUdfVisitorDispatcher(UdfExpr& expr_raw) -> BitsetType;
 
  private:
     const segcore::SegmentInternalInterface& segment_;
@@ -876,6 +885,140 @@ ExecExprVisitor::visit(TermExpr& expr) {
         }
         case DataType::VARCHAR: {
             res = ExecTermVisitorImpl<std::string>(expr);
+            break;
+        }
+        default:
+            PanicInfo("unsupported");
+    }
+    AssertInfo(res.size() == row_count_, "[ExecExprVisitor]Size of results not equal row count");
+    bitset_opt_ = std::move(res);
+}
+
+template <typename T, typename IndexFunc, typename ElementFunc>
+auto
+ExecExprVisitor::ExecUdfVisitorImpl(FieldId field_id, IndexFunc index_func, ElementFunc element_func) -> BitsetType {
+    auto& schema = segment_.get_schema();
+    auto& field_meta = schema[field_id];
+    auto indexing_barrier = segment_.num_chunk_index(field_id);
+    auto size_per_chunk = segment_.size_per_chunk();
+    auto num_chunk = upper_div(row_count_, size_per_chunk);
+    std::deque<BitsetType> results;
+
+    using Index = scalar::ScalarIndex<T>;
+    for (auto chunk_id = 0; chunk_id < indexing_barrier; ++chunk_id) {
+        const Index& indexing = segment_.chunk_scalar_index<T>(field_id, chunk_id);
+        // NOTE: knowhere is not const-ready
+        // This is a dirty workaround
+        auto data = index_func(const_cast<Index*>(&indexing));
+        AssertInfo(data->size() == size_per_chunk, "[ExecExprVisitor]Data size not equal to size_per_chunk");
+        results.emplace_back(std::move(*data));
+    }
+    for (auto chunk_id = indexing_barrier; chunk_id < num_chunk; ++chunk_id) {
+        auto this_size = chunk_id == num_chunk - 1 ? row_count_ - chunk_id * size_per_chunk : size_per_chunk;
+        BitsetType result(this_size);
+        auto chunk = segment_.chunk_data<T>(field_id, chunk_id);
+        const T* data = chunk.data();
+        for (int index = 0; index < this_size; ++index) {
+            result[index] = element_func(data[index]);
+        }
+        AssertInfo(result.size() == this_size, "");
+        results.emplace_back(std::move(result));
+    }
+    auto final_result = Assemble(results);
+    AssertInfo(final_result.size() == row_count_, "[ExecExprVisitor]Final result size not equal to row count");
+    return final_result;
+}
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "Simplify"
+template <typename T>
+auto
+ExecExprVisitor::ExecUdfVisitorDispatcher(UdfExpr& expr_raw) -> BitsetType {
+    // equal
+    auto& expr = static_cast<UdfExprImpl<T>&>(expr_raw);
+    using Index = scalar::ScalarIndex<T>;
+    auto val = expr.terms_[0];
+    auto func_name = expr.func_name_;
+    auto index_func = [val](Index* index) { return index->In(1, &val); };
+    auto elem_func = [val](T x) { return (x == val); };
+
+    auto field_id = expr.field_id_;
+    auto& schema = segment_.get_schema();
+    auto& field_meta = schema[field_id];
+    auto indexing_barrier = segment_.num_chunk_index(field_id);
+    auto size_per_chunk = segment_.size_per_chunk();
+    auto num_chunk = upper_div(row_count_, size_per_chunk);
+    std::deque<BitsetType> results;
+
+    auto WatBase64Str = "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBpMzIgaTMyKSAocmVzdWx0IGkzMikpKQogIChmdW5jICRlcXVhbCAodHlwZSAwKSAocGFyYW0gaTMyIGkzMikgKHJlc3VsdCBpMzIpCiAgICAobG9jYWwgaTMyIGkzMiBpMzIgaTMyIGkzMiBpMzIgaTMyIGkzMikKICAgIGdsb2JhbC5nZXQgJF9fc3RhY2tfcG9pbnRlcgogICAgbG9jYWwuc2V0IDIKICAgIGkzMi5jb25zdCAxNgogICAgbG9jYWwuc2V0IDMKICAgIGxvY2FsLmdldCAyCiAgICBsb2NhbC5nZXQgMwogICAgaTMyLnN1YgogICAgbG9jYWwuc2V0IDQKICAgIGxvY2FsLmdldCA0CiAgICBsb2NhbC5nZXQgMAogICAgaTMyLnN0b3JlIG9mZnNldD04CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDEKICAgIGkzMi5zdG9yZSBvZmZzZXQ9MTIKICAgIGxvY2FsLmdldCAwCiAgICBsb2NhbC5zZXQgNQogICAgbG9jYWwuZ2V0IDEKICAgIGxvY2FsLnNldCA2CiAgICBsb2NhbC5nZXQgNQogICAgbG9jYWwuZ2V0IDYKICAgIGkzMi5lcQogICAgbG9jYWwuc2V0IDcKICAgIGkzMi5jb25zdCAxCiAgICBsb2NhbC5zZXQgOAogICAgbG9jYWwuZ2V0IDcKICAgIGxvY2FsLmdldCA4CiAgICBpMzIuYW5kCiAgICBsb2NhbC5zZXQgOQogICAgbG9jYWwuZ2V0IDkKICAgIHJldHVybikKICAodGFibGUgKDswOykgMSAxIGZ1bmNyZWYpCiAgKG1lbW9yeSAoOzA7KSAxNikKICAoZ2xvYmFsICRfX3N0YWNrX3BvaW50ZXIgKG11dCBpMzIpIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGdsb2JhbCAoOzE7KSBpMzIgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MjspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChleHBvcnQgIm1lbW9yeSIgKG1lbW9yeSAwKSkKICAoZXhwb3J0ICJlcXVhbCIgKGZ1bmMgJGVxdWFsKSkKICAoZXhwb3J0ICJfX2RhdGFfZW5kIiAoZ2xvYmFsIDEpKQogIChleHBvcnQgIl9faGVhcF9iYXNlIiAoZ2xvYmFsIDIpKSkK";
+    WasmFunctionManager& wasmFunctionManager = WasmFunctionManager::getInstance();
+    wasmFunctionManager.RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE, "equal", "equal", WatBase64Str);
+
+    for (auto chunk_id = 0; chunk_id < indexing_barrier; ++chunk_id) {
+        const Index& indexing = segment_.chunk_scalar_index<T>(field_id, chunk_id);
+        // NOTE: knowhere is not const-ready
+        // This is a dirty workaround
+        auto data = index_func(const_cast<Index*>(&indexing));
+        AssertInfo(data->size() == size_per_chunk, "[ExecExprVisitor]Data size not equal to size_per_chunk");
+        results.emplace_back(std::move(*data));
+    }
+    std::vector<T> args = {val, val};
+    for (auto chunk_id = indexing_barrier; chunk_id < num_chunk; ++chunk_id) {
+        auto this_size = chunk_id == num_chunk - 1 ? row_count_ - chunk_id * size_per_chunk : size_per_chunk;
+        BitsetType result(this_size);
+        auto chunk = segment_.chunk_data<T>(field_id, chunk_id);
+        const T* data = chunk.data();
+        for (int index = 0; index < this_size; ++index) {
+            args[1] = data[index];
+            bool res = wasmFunctionManager.runElemFunc<T>(func_name, args);
+            result[index] = res;
+        }
+        AssertInfo(result.size() == this_size, "");
+        results.emplace_back(std::move(result));
+    }
+    auto final_result = Assemble(results);
+    AssertInfo(final_result.size() == row_count_, "[ExecExprVisitor]Final result size not equal to row count");
+    return final_result;
+}
+#pragma clang diagnostic pop
+
+void
+ExecExprVisitor::visit(UdfExpr& expr) {
+    auto& field_meta = segment_.get_schema()[expr.field_id_];
+    AssertInfo(expr.data_type_ == field_meta.get_data_type(),
+               "[ExecExprVisitor]DataType of expr isn't field_meta data type");
+    BitsetType res;
+    switch (expr.data_type_) {
+        case DataType::BOOL: {
+            res = ExecUdfVisitorDispatcher<bool>(expr);
+            break;
+        }
+        case DataType::INT8: {
+            res = ExecUdfVisitorDispatcher<int8_t>(expr);
+            break;
+        }
+        case DataType::INT16: {
+            res = ExecUdfVisitorDispatcher<int16_t>(expr);
+            break;
+        }
+        case DataType::INT32: {
+            res = ExecUdfVisitorDispatcher<int32_t>(expr);
+            break;
+        }
+        case DataType::INT64: {
+            res = ExecUdfVisitorDispatcher<int64_t>(expr);
+            break;
+        }
+        case DataType::FLOAT: {
+            res = ExecUdfVisitorDispatcher<float>(expr);
+            break;
+        }
+        case DataType::DOUBLE: {
+            res = ExecUdfVisitorDispatcher<double>(expr);
+            break;
+        }
+        case DataType::VARCHAR: {
+            res = ExecUdfVisitorDispatcher<std::string>(expr);
             break;
         }
         default:

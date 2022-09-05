@@ -44,6 +44,9 @@ class ExecExprVisitor : public ExprVisitor {
     void
     visit(CompareExpr& expr) override;
 
+    void
+    visit(UdfExpr& expr) override;
+
  public:
     ExecExprVisitor(const segcore::SegmentInternalInterface& segment, int64_t row_count, Timestamp timestamp)
         : segment_(segment), row_count_(row_count), timestamp_(timestamp) {
@@ -87,6 +90,14 @@ class ExecExprVisitor : public ExprVisitor {
     template <typename CmpFunc>
     auto
     ExecCompareExprDispatcher(CompareExpr& expr, CmpFunc cmp_func) -> BitsetType;
+
+    template <typename T, typename IndexFunc, typename ElementFunc>
+    [[maybe_unused]] auto
+    ExecUdfVisitorImpl(FieldId field_id, IndexFunc index_func, ElementFunc element_func) -> BitsetType;
+
+    template <typename T>
+    auto
+    ExecUdfVisitorDispatcher(UdfExpr& expr_raw) -> BitsetType;
 
  private:
     const segcore::SegmentInternalInterface& segment_;

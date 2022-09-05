@@ -890,7 +890,7 @@ func (v *ParserVisitor) VisitUdf(ctx *parser.UdfContext) interface{} {
 	if err != nil {
 		return err
 	}
-	// TODO (wang ziyu): get udf wasm file from rootcoord
+	// TODO (wzymumon): get udf wasm file from rootcoord
 	allExpr := ctx.AllExpr()
 	lenOfAllExpr := len(allExpr)
 	udfArgs := make([]*planpb.UdfArg, 0, lenOfAllExpr)
