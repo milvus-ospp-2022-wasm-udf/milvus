@@ -45,7 +45,7 @@ class ExecExprVisitor : public ExprVisitor {
     visit(CompareExpr& expr) override;
 
     void
-    visit(UdfExpr& expr) override;
+    visit(UdfExpr& expr);
 
  public:
     ExecExprVisitor(const segcore::SegmentInternalInterface& segment, int64_t row_count, Timestamp timestamp)
