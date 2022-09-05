@@ -64,4 +64,9 @@ ExtractInfoExprVisitor::visit(BinaryArithOpEvalRangeExpr& expr) {
     plan_info_.add_involved_field(expr.field_id_);
 }
 
+void
+ExtractInfoExprVisitor::visit(UdfExpr& expr) {
+    plan_info_.add_involved_field(expr.field_id_);
+}
+
 }  // namespace milvus::query

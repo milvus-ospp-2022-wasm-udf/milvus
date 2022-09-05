@@ -21,7 +21,7 @@ TEST(WasmFunctionManagerTest, gcd){
     WasmFunctionManager& wasmFunctionManager = WasmFunctionManager::getInstance();
     wasmFunctionManager.RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"gcd","main",WatBase64Str);
     std::vector<int> args = {6, 27};
-    auto result =  wasmFunctionManager.run("gcd", args);
+    auto result = wasmFunctionManager.run("gcd", args);
     printf("The result of gcd(%d, %d) is %d\n", args[0], args[1], result[0]);
 }
 
@@ -37,11 +37,29 @@ TEST(WasmFunctionManagerTest, equal){
     wasmFunctionManager.RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"equal","equal",WatBase64Str);
 
     std::vector<int> args = {6, 27};
-    auto result =  wasmFunctionManager.run("equal", args);
+    auto result = wasmFunctionManager.run("equal", args);
     printf("The result of equal(%d, %d) is %d\n", args[0], args[1], result[0]);
 
     args = {27, 27};
-    result =  wasmFunctionManager.run("equal", args);
+    result = wasmFunctionManager.run("equal", args);
     printf("The result of equal(%d, %d) is %d\n", args[0], args[1], result[0]);
 }
+
+TEST(WasmFunctionManagerTest, larger_than){
+
+    auto WatBase64Str = "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBmNjQgZjY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRsYXJnZXJfdGhhbiAodHlwZSAwKSAocGFyYW0gZjY0IGY2NCkgKHJlc3VsdCBpMzIpCiAgICAobG9jYWwgaTMyIGkzMiBpMzIgaTMyIGkzMiBpMzIpCiAgICBnbG9iYWwuZ2V0ICRfX3N0YWNrX3BvaW50ZXIKICAgIGxvY2FsLnNldCAyCiAgICBpMzIuY29uc3QgMTYKICAgIGxvY2FsLnNldCAzCiAgICBsb2NhbC5nZXQgMgogICAgbG9jYWwuZ2V0IDMKICAgIGkzMi5zdWIKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDAKICAgIGY2NC5zdG9yZQogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxCiAgICBmNjQuc3RvcmUgb2Zmc2V0PTgKICAgIGxvY2FsLmdldCAwCiAgICBsb2NhbC5nZXQgMQogICAgZjY0Lmd0CiAgICBsb2NhbC5zZXQgNQogICAgaTMyLmNvbnN0IDEKICAgIGxvY2FsLnNldCA2CiAgICBsb2NhbC5nZXQgNQogICAgbG9jYWwuZ2V0IDYKICAgIGkzMi5hbmQKICAgIGxvY2FsLnNldCA3CiAgICBsb2NhbC5nZXQgNwogICAgcmV0dXJuKQogICh0YWJsZSAoOzA7KSAxIDEgZnVuY3JlZikKICAobWVtb3J5ICg7MDspIDE2KQogIChnbG9iYWwgJF9fc3RhY2tfcG9pbnRlciAobXV0IGkzMikgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MTspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsyOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGV4cG9ydCAibWVtb3J5IiAobWVtb3J5IDApKQogIChleHBvcnQgImxhcmdlcl90aGFuIiAoZnVuYyAkbGFyZ2VyX3RoYW4pKQogIChleHBvcnQgIl9fZGF0YV9lbmQiIChnbG9iYWwgMSkpCiAgKGV4cG9ydCAiX19oZWFwX2Jhc2UiIChnbG9iYWwgMikpKQo=";
+    WasmFunctionManager& wasmFunctionManager = WasmFunctionManager::getInstance();
+    wasmFunctionManager.RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"larger_than","larger_than",WatBase64Str);
+
+    std::vector<double> args = {0.5, 0.6};
+    auto result = wasmFunctionManager.runElemFunc<double>("larger_than", args);
+    printf("The result of larger_than(%f, %f) is %d\n", args[0], args[1], result);
+
+    WasmFunctionManager::getInstance().RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"larger_than","larger_than",WatBase64Str);
+
+    args = {0.5, 0.4};
+    result = wasmFunctionManager.runElemFunc<double>("larger_than", args);
+    printf("The result of larger_than(%f, %f) is %d\n", args[0], args[1], result);
+}
+
 }  // namespace milvus

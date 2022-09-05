@@ -33,7 +33,7 @@ std::string readFile(const std::string name) {
     return strStream.str();
 }
 
-WasmtimeRunInstance WasmFunctionManager::createInstanceAndFunction(const std::string &watString, const std::string functionHandler) {
+WasmtimeRunInstance WasmFunctionManager::createInstanceAndFunction(const std::string &watString, const std::string &functionHandler) {
     auto module = wasmtime::Module::compile(*engine, watString).unwrap();
     auto instance = wasmtime::Instance::create(store, module, {}).unwrap();
 
@@ -60,22 +60,6 @@ std::vector<int> WasmFunctionManager::run(std::string functionName, std::vector<
     return run(module, args);
 }
 
-template<typename T>
-bool
-WasmFunctionManager::runElemFunc(std::string functionName, std::vector<T> args) {
-    auto module = modules.at(functionName);
-    std::vector<wasmtime::Val> argv;
-    for (size_t i = 0; i < args.size(); ++i) {
-        argv.emplace_back(static_cast<int32_t>(args[i]));
-    }
-
-    // the return
-    std::vector<int> result;
-    auto results = module.func.call(store, argv).unwrap();
-
-    return results[0].i32();
-}
-
 std::vector<int> WasmFunctionManager::run(const WasmtimeRunInstance &wasmTimeRunInstance,
                                           std::vector<int> args) {
     // the args which wasm run
@@ -96,26 +80,27 @@ std::vector<int> WasmFunctionManager::run(const WasmtimeRunInstance &wasmTimeRun
     return result;
 }
 
-// TODO(wzymumon): Add RegisterFunction in rootcoord and core
 bool WasmFunctionManager::RegisterFunction(
                                            std::string moduleType,
                                            std::string functionName,
                                            std::string functionHandler,
                                            const std::string &base64OrOtherString) {
-    // for WAT
-    if (moduleType == TYPE_WAT_MODULE) {
-        auto watString = myBase64Decode(base64OrOtherString);
-        auto wasmRuntime = createInstanceAndFunction(watString, functionHandler);
-        modules.emplace(functionName, wasmRuntime);
-        typeMap.emplace(functionName, TYPE_WAT_MODULE);
-        return true;
+
+    auto gotType = typeMap.find(functionName);
+    if (gotType != typeMap.end()) {
+        std::cout << "[wzymumon]The function is already registered" << std::endl;
+        return false;
     }
 
-    if (moduleType == TYPE_WASM_MODULE) {
-        //TODO(wzymumon): run `.wasm` in wasm runtime
-    }
-
-    return false;
+    std::cout << "[wzymumon] functionName is " << functionName << std::endl;
+    std::cout << "[wzymumon] functionName type is " << moduleType << std::endl;
+    std::cout << "[wzymumon] function base64 is " << base64OrOtherString << std::endl;
+    auto watString = myBase64Decode(base64OrOtherString);
+    auto wasmRuntime = createInstanceAndFunction(watString, functionHandler);
+    modules.emplace(functionName, wasmRuntime);
+    typeMap.emplace(functionName, TYPE_WAT_MODULE);
+    std::cout << "[wzymumon] size of module map is " << modules.size() << std::endl;
+    return true;
 }
 
 bool WasmFunctionManager::DeleteFunction(std::string functionName) {

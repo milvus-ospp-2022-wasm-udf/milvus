@@ -208,8 +208,8 @@ struct UdfExpr : Expr {
     // udf_args don't need to check field_id and data_type
     // TODO (wzymumon) : Externalize function name, wasm body, function parameters from udfExpr.proto
 
-    const std::string& func_name_;
-    const std::string& wasm_body_;
+    const std::string func_name_;
+    const std::string wasm_body_;
 
     // just for one field
     FieldId field_id_;
@@ -219,7 +219,7 @@ protected:
     // prevent accidential instantiation
     UdfExpr() = delete;
 
-    UdfExpr(const std::string &func_name, const std::string &wasm_body, const FieldId field_id, const DataType data_type)
+    UdfExpr(const std::string func_name, const std::string wasm_body, const FieldId field_id, const DataType data_type)
             : wasm_body_(wasm_body), func_name_(func_name),field_id_(field_id), data_type_(data_type) {
     }
 

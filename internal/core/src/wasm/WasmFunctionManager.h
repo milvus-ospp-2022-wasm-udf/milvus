@@ -91,7 +91,7 @@ public:
     }
 
     WasmtimeRunInstance createInstanceAndFunction(const std::string &watString,
-                                                  const std::string functionHandler);
+                                                  const std::string &functionHandler);
 
     std::vector<int> run(const WasmtimeRunInstance &wasmTimeRunInstance, std::vector<int> args);
 
@@ -168,8 +168,25 @@ public:
     }
 
     template<typename T>
-    bool runElemFunc(std::string functionName, std::vector<T> args);
+    bool runElemFunc(const std::string &functionName, std::vector<T> args);
 };
+
+template<typename T>
+bool
+WasmFunctionManager::runElemFunc(const std::string &functionName, std::vector<T> args){
+    auto module = modules.at(functionName);
+    std::vector<wasmtime::Val> argv;
+    for (size_t i = 0; i < args.size(); ++i) {
+        argv.emplace_back(static_cast<T>(args[i]));
+    }
+
+    // the return
+    std::vector<int> result;
+    auto results = module.func.call(store, argv).unwrap();
+
+    return results[0].i32();
+}
 
 }  // namespace milvus
 #endif //MILVUS_WASMFUNCTION_H
+

@@ -9,10 +9,6 @@
 # is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 # or implied. See the License for the specific language governing permissions and limitations under the License
 
-cmake_minimum_required(VERSION 3.23)
-
-set(CMAKE_CXX_STANDARD 17)
-
 option( EMBEDDED_MILVUS "Enable embedded Milvus" OFF )
 
 if ( EMBEDDED_MILVUS )
@@ -20,11 +16,12 @@ if ( EMBEDDED_MILVUS )
 endif()
 
 #WasmFunctionManager
-add_library(
-        function_manager_obj OBJECT
+set(MILVUS_WASM_SRCS
         WasmFunctionManager.cpp
-)
+        )
 
 add_subdirectory(test)
 
-target_link_libraries(function_manager_obj PUBLIC wasmtime)
+add_library(milvus_wasm ${MILVUS_WASM_SRCS})
+
+target_link_libraries(milvus_wasm PUBLIC wasmtime)
