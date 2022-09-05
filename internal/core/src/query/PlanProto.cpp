@@ -411,6 +411,78 @@ ProtoParser::ParseBinaryArithOpEvalRangeExpr(const proto::plan::BinaryArithOpEva
     return result;
 }
 
+template <typename T>
+std::unique_ptr<UdfExprImpl<T>>
+ExtractUdfExprImpl(FieldId field_id, DataType data_type, const planpb::UdfExpr& expr_proto) {
+    auto func_name = expr_proto.udf_func_name();
+    auto udf_args = expr_proto.udf_args();
+    auto wasm_body = expr_proto.wasm_body();
+    static_assert(IsScalar<T>);
+    auto size = udf_args.size();
+    std::vector<T> terms(size);
+    for (int i = 1; i < size; ++i) {
+        auto& value_proto = udf_args[i].value();
+        if constexpr (std::is_same_v<T, bool>) {
+            Assert(value_proto.val_case() == planpb::GenericValue::kBoolVal);
+            terms[i] = static_cast<T>(value_proto.bool_val());
+        } else if constexpr (std::is_integral_v<T>) {
+            Assert(value_proto.val_case() == planpb::GenericValue::kInt64Val);
+            terms[i] = static_cast<T>(value_proto.int64_val());
+        } else if constexpr (std::is_floating_point_v<T>) {
+            Assert(value_proto.val_case() == planpb::GenericValue::kFloatVal);
+            terms[i] = static_cast<T>(value_proto.float_val());
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            Assert(value_proto.val_case() == planpb::GenericValue::kStringVal);
+            terms[i] = static_cast<T>(value_proto.string_val());
+        } else {
+            static_assert(always_false<T>);
+        }
+    }
+    return std::make_unique<UdfExprImpl<T>>(func_name, wasm_body, field_id, data_type, terms);
+}
+
+ExprPtr
+ProtoParser::ParseUdfExpr(const proto::plan::UdfExpr &expr_pb) {
+    auto& column_info = expr_pb.udf_args()[0].column_info();
+    auto field_id = FieldId(column_info.field_id());
+    auto data_type = schema[field_id].get_data_type();
+    Assert(data_type == static_cast<DataType>(column_info.data_type()));
+
+    // auto& field_meta = schema[field_offset];
+    auto result = [&]() -> ExprPtr {
+        switch (data_type) {
+            case DataType::BOOL: {
+                return ExtractUdfExprImpl<bool>(field_id, data_type, expr_pb);
+            }
+            case DataType::INT8: {
+                return ExtractUdfExprImpl<int8_t>(field_id, data_type, expr_pb);
+            }
+            case DataType::INT16: {
+                return ExtractUdfExprImpl<int16_t>(field_id, data_type, expr_pb);
+            }
+            case DataType::INT32: {
+                return ExtractUdfExprImpl<int32_t>(field_id, data_type, expr_pb);
+            }
+            case DataType::INT64: {
+                return ExtractUdfExprImpl<int64_t>(field_id, data_type, expr_pb);
+            }
+            case DataType::FLOAT: {
+                return ExtractUdfExprImpl<float>(field_id, data_type, expr_pb);
+            }
+            case DataType::DOUBLE: {
+                return ExtractUdfExprImpl<double>(field_id, data_type, expr_pb);
+            }
+            case DataType::VARCHAR: {
+                return ExtractUdfExprImpl<std::string>(field_id, data_type, expr_pb);
+            }
+            default: {
+                PanicInfo("unsupported data type");
+            }
+        }
+    }();
+    return result;
+}
+
 ExprPtr
 ProtoParser::ParseExpr(const proto::plan::Expr& expr_pb) {
     using ppe = proto::plan::Expr;
@@ -435,6 +507,9 @@ ProtoParser::ParseExpr(const proto::plan::Expr& expr_pb) {
         }
         case ppe::kBinaryArithOpEvalRangeExpr: {
             return ParseBinaryArithOpEvalRangeExpr(expr_pb.binary_arith_op_eval_range_expr());
+        }
+        case ppe::kUdfExpr: {
+            return ParseUdfExpr(expr_pb.udf_expr());
         }
         default:
             PanicInfo("unsupported expr proto node");

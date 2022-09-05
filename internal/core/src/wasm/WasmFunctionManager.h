@@ -166,6 +166,9 @@ public:
         }
         return retval;
     }
+
+    template<typename T>
+    bool runElemFunc(std::string functionName, std::vector<T> args);
 };
 
 }  // namespace milvus
