@@ -97,6 +97,10 @@ class ExecExprVisitor : public ExprVisitor {
 
     template <typename T>
     auto
+    ExecUdfByWasmVisitorImpl(FieldId field_id, const std::string function_name, const std::string &wat_body, T val) -> BitsetType;
+
+    template <typename T>
+    auto
     ExecUdfVisitorDispatcher(UdfExpr& expr_raw) -> BitsetType;
 
  private:
