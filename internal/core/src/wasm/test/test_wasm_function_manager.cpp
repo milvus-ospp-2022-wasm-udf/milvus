@@ -55,6 +55,8 @@ TEST(WasmFunctionManagerTest, larger_than){
     auto result = wasmFunctionManager.runElemFunc<double>("larger_than", args);
     printf("The result of larger_than(%f, %f) is %d\n", args[0], args[1], result);
 
+    WasmFunctionManager::getInstance().RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"larger_than","larger_than",WatBase64Str);
+
     args = {0.5, 0.4};
     result = wasmFunctionManager.runElemFunc<double>("larger_than", args);
     printf("The result of larger_than(%f, %f) is %d\n", args[0], args[1], result);

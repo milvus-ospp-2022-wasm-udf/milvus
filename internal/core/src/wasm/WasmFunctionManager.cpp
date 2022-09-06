@@ -80,26 +80,27 @@ std::vector<int> WasmFunctionManager::run(const WasmtimeRunInstance &wasmTimeRun
     return result;
 }
 
-// TODO(wzymumon): Add RegisterFunction in rootcoord and core
 bool WasmFunctionManager::RegisterFunction(
                                            std::string moduleType,
                                            std::string functionName,
                                            std::string functionHandler,
                                            const std::string &base64OrOtherString) {
-    // for WAT
-    if (moduleType == TYPE_WAT_MODULE) {
-        auto watString = myBase64Decode(base64OrOtherString);
-        auto wasmRuntime = createInstanceAndFunction(watString, functionHandler);
-        modules.emplace(functionName, wasmRuntime);
-        typeMap.emplace(functionName, TYPE_WAT_MODULE);
-        return true;
+
+    auto gotType = typeMap.find(functionName);
+    if (gotType != typeMap.end()) {
+        std::cout << "[wzymumon]The function is already registered" << std::endl;
+        return false;
     }
 
-    if (moduleType == TYPE_WASM_MODULE) {
-        //TODO(wzymumon): run `.wasm` in wasm runtime
-    }
-
-    return false;
+    std::cout << "[wzymumon] functionName is " << functionName << std::endl;
+    std::cout << "[wzymumon] functionName type is " << moduleType << std::endl;
+    std::cout << "[wzymumon] function base64 is " << base64OrOtherString << std::endl;
+    auto watString = myBase64Decode(base64OrOtherString);
+    auto wasmRuntime = createInstanceAndFunction(watString, functionHandler);
+    modules.emplace(functionName, wasmRuntime);
+    typeMap.emplace(functionName, TYPE_WAT_MODULE);
+    std::cout << "[wzymumon] size of module map is " << modules.size() << std::endl;
+    return true;
 }
 
 bool WasmFunctionManager::DeleteFunction(std::string functionName) {
