@@ -16,12 +16,12 @@ if ( EMBEDDED_MILVUS )
 endif()
 
 #WasmFunctionManager
-add_library(
-        function_manager_obj OBJECT
-        WasmFunctionManager.h
+set(MILVUS_WASM_SRCS
         WasmFunctionManager.cpp
-)
+        )
 
 add_subdirectory(test)
 
-target_link_libraries(function_manager_obj PUBLIC wasmtime)
+add_library(milvus_wasm ${MILVUS_WASM_SRCS})
+
+target_link_libraries(milvus_wasm PUBLIC wasmtime)
