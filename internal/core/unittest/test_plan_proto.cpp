@@ -107,7 +107,7 @@ vector_anns: <
     auto proto_text = fmt1.str();
     planpb::PlanNode node_proto;
     google::protobuf::TextFormat::ParseFromString(proto_text, &node_proto);
-    // std::cout << node_proto.DebugString();
+//     std::cout << node_proto.DebugString();
     auto plan = ProtoParser(*schema).CreatePlan(node_proto);
 
     ShowPlanNodeVisitor visitor;
@@ -146,6 +146,62 @@ vector_anns: <
 
     auto ref_plan = CreatePlan(*schema, dsl_text);
     plan->check_identical(*ref_plan);
+}
+
+TEST_P(PlanProtoTest, UdfExpr) {
+    FieldName vec_field_name = FieldName("FloatVectorField");
+    FieldId vec_float_field_id = schema->get_field_id(vec_field_name);
+
+    auto field_name = std::get<0>(GetParam());
+    auto field_id = schema->get_field_id(FieldName(field_name));
+    auto data_type = schema->operator[](field_id).get_data_type();
+    auto data_type_str = spb::DataType_Name(int(data_type));
+
+    string value_tag = "bool_val";
+    if (datatype_is_floating(data_type)) {
+        value_tag = "float_val";
+    } else if (datatype_is_integer(data_type)) {
+        value_tag = "int64_val";
+    }
+
+    auto proto_text = R"(
+vector_anns: <
+  field_id: 102
+  predicates: <
+    udf_expr: <
+      udf_func_name: "larger_than"
+      udf_args: <
+        column_info: <
+          field_id: 101
+          data_type: Double
+        >
+      >
+      udf_args: <
+        value: <
+          float_val: 0.5
+        >
+      >
+      wasm_body: "not implemented"
+    >
+  >
+  query_info: <
+    topk: 3
+    metric_type: "L2"
+    search_params: "{\"nprobe\":10}"
+    round_decimal: -1
+  >
+  placeholder_tag: "$0"
+>
+output_field_ids: 101
+)";
+    planpb::PlanNode node_proto;
+    google::protobuf::TextFormat::ParseFromString(proto_text, &node_proto);
+    std::cout << node_proto.DebugString();
+//    auto plan = ProtoParser(*schema).CreatePlan(node_proto);
+//
+//    ShowPlanNodeVisitor visitor;
+//    auto json = visitor.call_child(*plan->plan_node_);
+    // std::cout << json.dump(2);
 }
 
 TEST_P(PlanProtoTest, TermExpr) {

@@ -1438,3 +1438,135 @@ TEST(Expr, TestBinaryArithOpEvalRangeWithScalarSortIndex) {
         }
     }
 }
+
+TEST(Expr, TestUdfExpr) {
+    using namespace milvus::query;
+    using namespace milvus::segcore;
+    std::vector<std::tuple<std::string, std::function<bool(int)>, DataType>> testcases = {
+        // Add test cases for UdfExpr EQ of various data types
+        {R"(udf_func_name: "smaller_than"
+        udf_args: <
+            column_info: <
+                field_id: %2%
+                data_type: %3%
+            >
+        >
+        udf_args: <
+            value: <
+              int64_val: 1000
+            >
+        >
+        wasm_body: "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBpNjQgaTY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRzbWFsbGVyX3RoYW4gKHR5cGUgMCkgKHBhcmFtIGk2NCBpNjQpIChyZXN1bHQgaTMyKQogICAgKGxvY2FsIGkzMiBpMzIgaTMyIGk2NCBpNjQgaTMyIGkzMiBpMzIpCiAgICBnbG9iYWwuZ2V0ICRfX3N0YWNrX3BvaW50ZXIKICAgIGxvY2FsLnNldCAyCiAgICBpMzIuY29uc3QgMTYKICAgIGxvY2FsLnNldCAzCiAgICBsb2NhbC5nZXQgMgogICAgbG9jYWwuZ2V0IDMKICAgIGkzMi5zdWIKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDAKICAgIGk2NC5zdG9yZQogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxCiAgICBpNjQuc3RvcmUgb2Zmc2V0PTgKICAgIGxvY2FsLmdldCAwCiAgICBsb2NhbC5zZXQgNQogICAgbG9jYWwuZ2V0IDEKICAgIGxvY2FsLnNldCA2CiAgICBsb2NhbC5nZXQgNQogICAgbG9jYWwuZ2V0IDYKICAgIGk2NC5sdF9zCiAgICBsb2NhbC5zZXQgNwogICAgaTMyLmNvbnN0IDEKICAgIGxvY2FsLnNldCA4CiAgICBsb2NhbC5nZXQgNwogICAgbG9jYWwuZ2V0IDgKICAgIGkzMi5hbmQKICAgIGxvY2FsLnNldCA5CiAgICBsb2NhbC5nZXQgOQogICAgcmV0dXJuKQogICh0YWJsZSAoOzA7KSAxIDEgZnVuY3JlZikKICAobWVtb3J5ICg7MDspIDE2KQogIChnbG9iYWwgJF9fc3RhY2tfcG9pbnRlciAobXV0IGkzMikgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MTspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsyOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGV4cG9ydCAibWVtb3J5IiAobWVtb3J5IDApKQogIChleHBvcnQgInNtYWxsZXJfdGhhbiIgKGZ1bmMgJHNtYWxsZXJfdGhhbikpCiAgKGV4cG9ydCAiX19kYXRhX2VuZCIgKGdsb2JhbCAxKSkKICAoZXhwb3J0ICJfX2hlYXBfYmFzZSIgKGdsb2JhbCAyKSkp"
+        )",
+         [](int64_t v) { return v < 1000; }, DataType::INT64},
+    };
+
+    std::string serialized_expr_plan = R"(
+    vector_anns: <
+        field_id: %1%
+        predicates: <
+            udf_expr: <
+                @@@@@
+            >
+        >
+        query_info: <
+            topk: 10
+            round_decimal: 3
+            metric_type: "L2"
+            search_params: "{\"nprobe\": 10}"
+        >
+        placeholder_tag: "$0"
+    >)";
+
+    auto schema = std::make_shared<Schema>();
+    auto vec_fid = schema->AddDebugField("fakevec", DataType::VECTOR_FLOAT, 16, knowhere::metric::L2);
+    auto i8_fid = schema->AddDebugField("age8", DataType::INT8);
+    auto i16_fid = schema->AddDebugField("age16", DataType::INT16);
+    auto i32_fid = schema->AddDebugField("age32", DataType::INT32);
+    auto i64_fid = schema->AddDebugField("age64", DataType::INT64);
+    auto float_fid = schema->AddDebugField("age_float", DataType::FLOAT);
+    auto double_fid = schema->AddDebugField("age_double", DataType::DOUBLE);
+    schema->set_primary_field_id(i64_fid);
+
+    auto seg = CreateGrowingSegment(schema);
+    int N = 1000;
+    std::vector<int8_t> age8_col;
+    std::vector<int16_t> age16_col;
+    std::vector<int32_t> age32_col;
+    std::vector<int64_t> age64_col;
+    std::vector<float> age_float_col;
+    std::vector<double> age_double_col;
+    int num_iters = 100;
+    for (int iter = 0; iter < num_iters; ++iter) {
+        auto raw_data = DataGen(schema, N, iter);
+
+        auto new_age8_col = raw_data.get_col<int8_t>(i8_fid);
+        auto new_age16_col = raw_data.get_col<int16_t>(i16_fid);
+        auto new_age32_col = raw_data.get_col<int32_t>(i32_fid);
+        auto new_age64_col = raw_data.get_col<int64_t>(i64_fid);
+        auto new_age_float_col = raw_data.get_col<float>(float_fid);
+        auto new_age_double_col = raw_data.get_col<double>(double_fid);
+
+        age8_col.insert(age8_col.end(), new_age8_col.begin(), new_age8_col.end());
+        age16_col.insert(age16_col.end(), new_age16_col.begin(), new_age16_col.end());
+        age32_col.insert(age32_col.end(), new_age32_col.begin(), new_age32_col.end());
+        age64_col.insert(age64_col.end(), new_age64_col.begin(), new_age64_col.end());
+        age_float_col.insert(age_float_col.end(), new_age_float_col.begin(), new_age_float_col.end());
+        age_double_col.insert(age_double_col.end(), new_age_double_col.begin(), new_age_double_col.end());
+
+        seg->PreInsert(N);
+        seg->Insert(iter * N, N, raw_data.row_ids_.data(), raw_data.timestamps_.data(), raw_data.raw_);
+    }
+
+    auto seg_promote = dynamic_cast<SegmentGrowingImpl*>(seg.get());
+    ExecExprVisitor visitor(*seg_promote, seg_promote->get_row_count(), MAX_TIMESTAMP);
+
+    for (auto [clause, ref_func, dtype] : testcases) {
+        auto loc = serialized_expr_plan.find("@@@@@");
+        auto expr_plan = serialized_expr_plan;
+        expr_plan.replace(loc, 5, clause);
+        boost::format expr;
+
+        if(dtype==DataType::INT64){
+            expr = boost::format(expr_plan) % vec_fid.get() % i64_fid.get() %
+                   proto::schema::DataType_Name(static_cast<int>(DataType::INT64));
+        }
+
+        auto binary_plan = translate_text_plan_to_binary_plan(expr.str().data());
+        auto plan = CreateSearchPlanByExpr(*schema, binary_plan.data(), binary_plan.size());
+
+        auto final = visitor.call_child(*plan->plan_node_->predicate_.value());
+        EXPECT_EQ(final.size(), N * num_iters);
+
+        for (int i = 0; i < N * num_iters; ++i) {
+            auto ans = final[i];
+            if (dtype == DataType::INT8) {
+                auto val = age8_col[i];
+                auto ref = ref_func(val);
+                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
+            } else if (dtype == DataType::INT16) {
+                auto val = age16_col[i];
+                auto ref = ref_func(val);
+                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
+            } else if (dtype == DataType::INT32) {
+                auto val = age32_col[i];
+                auto ref = ref_func(val);
+                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
+            } else if (dtype == DataType::INT64) {
+                auto val = age64_col[i];
+                auto ref = ref_func(val);
+                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
+            } else if (dtype == DataType::FLOAT) {
+                auto val = age_float_col[i];
+                auto ref = ref_func(val);
+                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
+            } else if (dtype == DataType::DOUBLE) {
+                auto val = age_double_col[i];
+                auto ref = ref_func(val);
+                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
+            } else {
+                ASSERT_TRUE(false) << "No test case defined for this data type";
+            }
+        }
+    }
+}

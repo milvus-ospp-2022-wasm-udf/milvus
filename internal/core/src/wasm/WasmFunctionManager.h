@@ -19,6 +19,7 @@
 
 #include <wasmtime/wasmtime.hh>
 #include <unordered_map>
+#include <cassert>
 
 namespace milvus {
 
@@ -168,24 +169,21 @@ public:
     }
 
     template<typename T>
-    bool runElemFunc(const std::string &functionName, std::vector<T> args);
-};
+    bool
+    runElemFunc(const std::string functionName, std::vector<T> args){
+        std::vector<wasmtime::Val> result;
+        auto module = modules.at(functionName);
 
-template<typename T>
-bool
-WasmFunctionManager::runElemFunc(const std::string &functionName, std::vector<T> args){
-    auto module = modules.at(functionName);
-    std::vector<wasmtime::Val> argv;
-    for (size_t i = 0; i < args.size(); ++i) {
-        argv.emplace_back(static_cast<T>(args[i]));
+        std::vector<wasmtime::Val> argv;
+        for (size_t i = 0; i < args.size(); ++i) {
+            auto val = wasmtime::Val(args[i]);
+            argv.emplace_back(val);
+        }
+
+        auto results = module.func.call(store, argv).unwrap();
+        return results[0].i32();
     }
-
-    // the return
-    std::vector<int> result;
-    auto results = module.func.call(store, argv).unwrap();
-
-    return results[0].i32();
-}
+};
 
 }  // namespace milvus
 #endif //MILVUS_WASMFUNCTION_H

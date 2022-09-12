@@ -1,6 +1,8 @@
 package planparserv2
 
 import (
+	"fmt"
+	"github.com/golang/protobuf/proto"
 	"sync"
 	"testing"
 
@@ -545,15 +547,44 @@ func TestExpr_UDF(t *testing.T) {
 	exprStrs := []string{
 		`UDF "funcName" [2]`,
 		`UDF "funcName" [Int8Field]`,
-		`UDF "funcName" [Int8Field, 2]`,
+		`UDF "funcName" [DoubleField, 2]`,
 		`UDF "funcName" [Int8Field, Int8Field]`,
 		`UDF "funcName" [Int8Field, 2, Int16Field, 4]`,
-		`UDF "funcName" [StringField, "str13", "str14"]`,
 	}
 
 	for _, exprStr := range exprStrs {
 		expr, err := ParseExpr(helper, exprStr)
-		ShowExpr(expr)
 		assert.NoError(t, err, exprStr)
+		marshaledProtoPlan := proto.MarshalTextString(expr)
+		fmt.Printf(marshaledProtoPlan)
+		ShowExpr(expr)
 	}
+	//marshaledProtoPlan1 := proto.MarshalTextString(exprStr1)
+	//fmt.Printf(marshaledProtoPlan1)
+}
+
+// test udf expr
+func TestExprTextString_UDF(t *testing.T) {
+	schema := newTestSchema()
+	helper, err := typeutil.CreateSchemaHelper(schema)
+	assert.NoError(t, err)
+
+	exprStrs := []string{
+		`UDF "funcName" [DoubleField, 2]`,
+		`UDF "smaller_than" [Int64Field, 2000]`,
+	}
+
+	for _, exprStr := range exprStrs {
+		expr, err := ParseExpr(helper, exprStr)
+		assert.NoError(t, err, exprStr)
+		marshaledProtoPlan := proto.MarshalTextString(expr)
+		fmt.Printf(marshaledProtoPlan)
+		ShowExpr(expr)
+	}
+
+	exprStr := "vector_anns:<field_id:102 predicates:<udf_expr:<udf_func_name:\"larger_than\" udf_args:<column_info:<field_id:101 data_type:Double > > udf_args:<value:<float_val:0.5 > > wasm_body:\"not implemented\" > > query_info:<topk:3 metric_type:\"L2\" search_params:\"{\\\"nprobe\\\":10}\" round_decimal:-1 > placeholder_tag:\"$0\" > output_field_ids:101 "
+	pb := &planpb.PlanNode{}
+	err = proto.UnmarshalText(exprStr, pb)
+	marshaledProtoPlan := proto.MarshalTextString(pb)
+	fmt.Printf(marshaledProtoPlan)
 }
