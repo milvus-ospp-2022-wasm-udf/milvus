@@ -472,9 +472,6 @@ ProtoParser::ParseUdfExpr(const proto::plan::UdfExpr &expr_pb) {
             case DataType::DOUBLE: {
                 return ExtractUdfExprImpl<double>(field_id, data_type, expr_pb);
             }
-            case DataType::VARCHAR: {
-                return ExtractUdfExprImpl<std::string>(field_id, data_type, expr_pb);
-            }
             default: {
                 PanicInfo("unsupported data type");
             }

@@ -894,40 +894,16 @@ ExecExprVisitor::visit(TermExpr& expr) {
     bitset_opt_ = std::move(res);
 }
 
-template <typename T, typename IndexFunc, typename ElementFunc>
-auto
-ExecExprVisitor::ExecUdfVisitorImpl(FieldId field_id, IndexFunc index_func, ElementFunc element_func) -> BitsetType {
-    auto& schema = segment_.get_schema();
-    auto& field_meta = schema[field_id];
-    auto size_per_chunk = segment_.size_per_chunk();
-    auto num_chunk = upper_div(row_count_, size_per_chunk);
-    std::deque<BitsetType> results;
-
-    for (auto chunk_id = 0; chunk_id < num_chunk; ++chunk_id) {
-        auto this_size = chunk_id == num_chunk - 1 ? row_count_ - chunk_id * size_per_chunk : size_per_chunk;
-        BitsetType result(this_size);
-        auto chunk = segment_.chunk_data<T>(field_id, chunk_id);
-        const T* data = chunk.data();
-        for (int index = 0; index < this_size; ++index) {
-            result[index] = element_func(data[index]);
-        }
-        AssertInfo(result.size() == this_size, "");
-        results.emplace_back(std::move(result));
-    }
-    auto final_result = Assemble(results);
-    AssertInfo(final_result.size() == row_count_, "[ExecExprVisitor]Final result size not equal to row count");
-    return final_result;
-}
-
 template <typename T>
 auto
-ExecExprVisitor::ExecUdfByWasmVisitorImpl(FieldId field_id, const std::string function_name, const std::string &wat_body, T val) -> BitsetType {
+ExecExprVisitor::ExecUdfVisitorImpl(FieldId field_id, const std::string function_name, const std::string wat_body, T val) -> BitsetType {
     auto& schema = segment_.get_schema();
     auto& field_meta = schema[field_id];
     auto size_per_chunk = segment_.size_per_chunk();
     auto num_chunk = upper_div(row_count_, size_per_chunk);
     std::deque<BitsetType> results;
     WasmFunctionManager& wasmFunctionManager = WasmFunctionManager::getInstance();
+    wasmFunctionManager.RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,function_name,function_name,wat_body);
     std::vector<T> args(2);
     for (auto chunk_id = 0; chunk_id < num_chunk; ++chunk_id) {
         auto this_size = chunk_id == num_chunk - 1 ? row_count_ - chunk_id * size_per_chunk : size_per_chunk;
@@ -937,7 +913,7 @@ ExecExprVisitor::ExecUdfByWasmVisitorImpl(FieldId field_id, const std::string fu
         for (int index = 0; index < this_size; ++index) {
             args[0] = data[index];
             args[1] = val;
-            result[index] = wasmFunctionManager.runElemFunc<T>("larger_than", args);;
+            result[index] = wasmFunctionManager.runElemFunc<T>(function_name, args);
         }
         AssertInfo(result.size() == this_size, "");
         results.emplace_back(std::move(result));
@@ -947,60 +923,22 @@ ExecExprVisitor::ExecUdfByWasmVisitorImpl(FieldId field_id, const std::string fu
     return final_result;
 }
 
-bool wasm_func() {
-    auto WatBase64Str = "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBmNjQgZjY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRsYXJnZXJfdGhhbiAodHlwZSAwKSAocGFyYW0gZjY0IGY2NCkgKHJlc3VsdCBpMzIpCiAgICAobG9jYWwgaTMyIGkzMiBpMzIgaTMyIGkzMiBpMzIpCiAgICBnbG9iYWwuZ2V0ICRfX3N0YWNrX3BvaW50ZXIKICAgIGxvY2FsLnNldCAyCiAgICBpMzIuY29uc3QgMTYKICAgIGxvY2FsLnNldCAzCiAgICBsb2NhbC5nZXQgMgogICAgbG9jYWwuZ2V0IDMKICAgIGkzMi5zdWIKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDAKICAgIGY2NC5zdG9yZQogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxCiAgICBmNjQuc3RvcmUgb2Zmc2V0PTgKICAgIGxvY2FsLmdldCAwCiAgICBsb2NhbC5nZXQgMQogICAgZjY0Lmd0CiAgICBsb2NhbC5zZXQgNQogICAgaTMyLmNvbnN0IDEKICAgIGxvY2FsLnNldCA2CiAgICBsb2NhbC5nZXQgNQogICAgbG9jYWwuZ2V0IDYKICAgIGkzMi5hbmQKICAgIGxvY2FsLnNldCA3CiAgICBsb2NhbC5nZXQgNwogICAgcmV0dXJuKQogICh0YWJsZSAoOzA7KSAxIDEgZnVuY3JlZikKICAobWVtb3J5ICg7MDspIDE2KQogIChnbG9iYWwgJF9fc3RhY2tfcG9pbnRlciAobXV0IGkzMikgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MTspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsyOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGV4cG9ydCAibWVtb3J5IiAobWVtb3J5IDApKQogIChleHBvcnQgImxhcmdlcl90aGFuIiAoZnVuYyAkbGFyZ2VyX3RoYW4pKQogIChleHBvcnQgIl9fZGF0YV9lbmQiIChnbG9iYWwgMSkpCiAgKGV4cG9ydCAiX19oZWFwX2Jhc2UiIChnbG9iYWwgMikpKQo=";
-    std::cout << ("[wzymumon][wasm_func] wasmFunctionManager getIntance begin")<< std::endl;
-    WasmFunctionManager& wasmFunctionManager = WasmFunctionManager::getInstance();
-    std::cout << ("[wzymumon][wasm_func] wasmFunctionManager getIntance end") << std::endl;
-
-    std::cout << ("[wzymumon][wasm_func] RegisterFunction start") << std::endl;
-    wasmFunctionManager.RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"larger_than","larger_than",WatBase64Str);
-    std::cout << ("[wzymumon][wasm_func] RegisterFunction end") << std::endl;
-
-    std::cout << ("[wzymumon][wasm_func] runElemFunc start") << std::endl;
-    std::vector<double> args = {0.5, 0.6};
-    auto result = wasmFunctionManager.runElemFunc<double>("larger_than", args);
-    std::cout << ("[wzymumon][wasm_func] runElemFunc end") << std::endl;
-    std::cout << ("[wzymumon][wasm_func] result is ") << result << std::endl;
-    return result;
-
-}
-
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "Simplify"
 template <typename T>
 auto
 ExecExprVisitor::ExecUdfVisitorDispatcher(UdfExpr& expr_raw) -> BitsetType {
-//    auto WatBase64Str = "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBmNjQgZjY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRsYXJnZXJfdGhhbiAodHlwZSAwKSAocGFyYW0gZjY0IGY2NCkgKHJlc3VsdCBpMzIpCiAgICAobG9jYWwgaTMyIGkzMiBpMzIgaTMyIGkzMiBpMzIpCiAgICBnbG9iYWwuZ2V0ICRfX3N0YWNrX3BvaW50ZXIKICAgIGxvY2FsLnNldCAyCiAgICBpMzIuY29uc3QgMTYKICAgIGxvY2FsLnNldCAzCiAgICBsb2NhbC5nZXQgMgogICAgbG9jYWwuZ2V0IDMKICAgIGkzMi5zdWIKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDAKICAgIGY2NC5zdG9yZQogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxCiAgICBmNjQuc3RvcmUgb2Zmc2V0PTgKICAgIGxvY2FsLmdldCAwCiAgICBsb2NhbC5nZXQgMQogICAgZjY0Lmd0CiAgICBsb2NhbC5zZXQgNQogICAgaTMyLmNvbnN0IDEKICAgIGxvY2FsLnNldCA2CiAgICBsb2NhbC5nZXQgNQogICAgbG9jYWwuZ2V0IDYKICAgIGkzMi5hbmQKICAgIGxvY2FsLnNldCA3CiAgICBsb2NhbC5nZXQgNwogICAgcmV0dXJuKQogICh0YWJsZSAoOzA7KSAxIDEgZnVuY3JlZikKICAobWVtb3J5ICg7MDspIDE2KQogIChnbG9iYWwgJF9fc3RhY2tfcG9pbnRlciAobXV0IGkzMikgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MTspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsyOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGV4cG9ydCAibWVtb3J5IiAobWVtb3J5IDApKQogIChleHBvcnQgImxhcmdlcl90aGFuIiAoZnVuYyAkbGFyZ2VyX3RoYW4pKQogIChleHBvcnQgIl9fZGF0YV9lbmQiIChnbG9iYWwgMSkpCiAgKGV4cG9ydCAiX19oZWFwX2Jhc2UiIChnbG9iYWwgMikpKQo=";
-//    WasmFunctionManager& wasmFunctionManager = WasmFunctionManager::getInstance();
-//    wasmFunctionManager.RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"larger_than","larger_than",WatBase64Str);
-//
-//    std::vector<double> args1 = {0.5, 0.6};
-//    auto result1 = wasmFunctionManager.runElemFunc<double>("larger_than", args1);
-//    printf("The result of larger_than(%f, %f) is %d\n", args1[0], args1[1], result1);
-//    AssertInfo(result1 == 0, "[ExecExprVisitor]The result of larger_than is error");
-    std::cout << ("[wzymumon][ExecUdfVisitorDispatcher] wasm_func start") << std::endl;
-    bool res = wasm_func();
-    std::cout << ("[wzymumon][ExecUdfVisitorDispatcher] result is ") << res << std::endl;
-    std::cout << ("[wzymumon][ExecUdfVisitorDispatcher] wasm_func end") << std::endl;
-
-    // GreaterThan
-    std::cout << ("[wzymumon][ExecUdfVisitorDispatcher] search start") << std::endl;
     auto& expr = static_cast<UdfExprImpl<T>&>(expr_raw);
-    using Index = scalar::ScalarIndex<T>;
-    auto val = expr.terms_[0];
+    auto val = expr.terms_[1];
     auto field_id = expr.field_id_;
-    auto func_name = expr.func_name_;
-    auto& wast_body = expr.wasm_body_;
-    auto index_func = [val](Index* index) { return index->Range(val, OpType::GreaterThan); };
-    auto elem_func = [val](T x) { return (x > val); };
-    return ExecUdfVisitorImpl<T>(expr.field_id_, index_func, elem_func);
+    const std::string func_name = expr.func_name_;
+    const std::string wast_body = expr.wasm_body_;
+    return ExecUdfVisitorImpl<T>(expr.field_id_, func_name, wast_body, val);
 }
 #pragma clang diagnostic pop
 
 void
 ExecExprVisitor::visit(UdfExpr& expr) {
-
     auto& field_meta = segment_.get_schema()[expr.field_id_];
     AssertInfo(expr.data_type_ == field_meta.get_data_type(),
                "[ExecExprVisitor]DataType of expr isn't field_meta data type");
@@ -1028,10 +966,6 @@ ExecExprVisitor::visit(UdfExpr& expr) {
         }
         case DataType::FLOAT: {
             res = ExecUdfVisitorDispatcher<float>(expr);
-            break;
-        }
-        case DataType::DOUBLE: {
-            res = ExecUdfVisitorDispatcher<double>(expr);
             break;
         }
         default:

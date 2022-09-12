@@ -91,13 +91,9 @@ class ExecExprVisitor : public ExprVisitor {
     auto
     ExecCompareExprDispatcher(CompareExpr& expr, CmpFunc cmp_func) -> BitsetType;
 
-    template <typename T, typename IndexFunc, typename ElementFunc>
-    [[maybe_unused]] auto
-    ExecUdfVisitorImpl(FieldId field_id, IndexFunc index_func, ElementFunc element_func) -> BitsetType;
-
     template <typename T>
     auto
-    ExecUdfByWasmVisitorImpl(FieldId field_id, const std::string function_name, const std::string &wat_body, T val) -> BitsetType;
+    ExecUdfVisitorImpl(FieldId field_id, const std::string function_name, const std::string wat_body, T val) -> BitsetType;
 
     template <typename T>
     auto
