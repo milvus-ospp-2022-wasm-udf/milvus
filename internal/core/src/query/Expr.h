@@ -23,6 +23,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <boost/variant.hpp>
 
 #include "common/Schema.h"
 #include "pb/plan.pb.h"
@@ -206,21 +207,27 @@ struct UdfExpr : Expr {
     // Udf : UDF "funcName" [Int8Field, 2, Int16Field, 4],
     // parameter contains func_name, udf_args, wasm_body
     // udf_args don't need to check field_id and data_type
-    // TODO (wzymumon) : Externalize function name, wasm body, function parameters from udfExpr.proto
-
+    using param = boost::variant<bool, int8_t, int16_t, int32_t, int64_t, float, double, FieldId>;
+    // function name
     const std::string func_name_;
+    // function parameter
+    const std::vector<param> values_;
+    const std::vector<bool> is_field_;
+    // function body
     const std::string wasm_body_;
+    // function argument types
+    const std::vector<DataType> arg_types_;
 
-    // just for one field
-    FieldId field_id_;
-    DataType data_type_;
-
-protected:
-    // prevent accidential instantiation
-    UdfExpr() = delete;
-
-    UdfExpr(const std::string func_name, const std::string wasm_body, const FieldId field_id, const DataType data_type)
-            : wasm_body_(wasm_body), func_name_(func_name),field_id_(field_id), data_type_(data_type) {
+    UdfExpr(const std::string func_name,
+            const std::vector<param>& values,
+            const std::vector<bool>& is_field,
+            const std::string wasm_body,
+            const std::vector<DataType>& arg_types)
+            : func_name_(func_name),
+            values_(values),
+            is_field_(is_field),
+            wasm_body_(wasm_body),
+            arg_types_(arg_types){
     }
 
 public:

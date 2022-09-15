@@ -890,10 +890,10 @@ func (v *ParserVisitor) VisitUdf(ctx *parser.UdfContext) interface{} {
 	if err != nil {
 		return err
 	}
-	// TODO (wzymumon): get udf wasm file from rootcoord
+	// TODO (wzymumon): get udf wasm body and function argument types from rootcoord
 	allExpr := ctx.AllExpr()
 	lenOfAllExpr := len(allExpr)
-	udfArgs := make([]*planpb.UdfArg, 0, lenOfAllExpr)
+	udfParams := make([]*planpb.UdfParams, 0, lenOfAllExpr)
 	// parser udf arguments
 	for i := 0; i < lenOfAllExpr; i++ {
 		child := allExpr[i].Accept(v)
@@ -904,22 +904,22 @@ func (v *ParserVisitor) VisitUdf(ctx *parser.UdfContext) interface{} {
 		childExpr := getExpr(child)
 		column := toColumnInfo(childExpr)
 		if column != nil {
-			arg := &planpb.UdfArg{
-				Val: &planpb.UdfArg_ColumnInfo{
+			arg := &planpb.UdfParams{
+				Val: &planpb.UdfParams_ColumnInfo{
 					ColumnInfo: column,
 				},
 			}
-			udfArgs = append(udfArgs, arg)
+			udfParams = append(udfParams, arg)
 		}
 
 		childValue := getGenericValue(child)
 		if childValue != nil {
-			arg := &planpb.UdfArg{
-				Val: &planpb.UdfArg_Value{
+			arg := &planpb.UdfParams{
+				Val: &planpb.UdfParams_Value{
 					Value: childValue,
 				},
 			}
-			udfArgs = append(udfArgs, arg)
+			udfParams = append(udfParams, arg)
 		}
 
 		if column == nil && childValue == nil {
@@ -927,13 +927,33 @@ func (v *ParserVisitor) VisitUdf(ctx *parser.UdfContext) interface{} {
 		}
 	}
 
-	wasmBody := []byte("not implemented")
+	dataTypes := make([]schemapb.DataType, 0, lenOfAllExpr)
+	wasmBody := "not implemented"
+	// TODO (wangziyu): remove before commit
+	switch {
+	case funcName == "less_than":
+		dataTypes = append(dataTypes, schemapb.DataType_Int64)
+		dataTypes = append(dataTypes, schemapb.DataType_Int64)
+		wasmBody = "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBpNjQgaTY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRsZXNzX3RoYW4gKHR5cGUgMCkgKHBhcmFtIGk2NCBpNjQpIChyZXN1bHQgaTMyKQogICAgKGxvY2FsIGkzMiBpMzIgaTMyIGk2NCBpNjQgaTMyIGkzMiBpMzIpCiAgICBnbG9iYWwuZ2V0ICRfX3N0YWNrX3BvaW50ZXIKICAgIGxvY2FsLnNldCAyCiAgICBpMzIuY29uc3QgMTYKICAgIGxvY2FsLnNldCAzCiAgICBsb2NhbC5nZXQgMgogICAgbG9jYWwuZ2V0IDMKICAgIGkzMi5zdWIKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDAKICAgIGk2NC5zdG9yZQogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxCiAgICBpNjQuc3RvcmUgb2Zmc2V0PTgKICAgIGxvY2FsLmdldCAwCiAgICBsb2NhbC5zZXQgNQogICAgbG9jYWwuZ2V0IDEKICAgIGxvY2FsLnNldCA2CiAgICBsb2NhbC5nZXQgNQogICAgbG9jYWwuZ2V0IDYKICAgIGk2NC5sdF9zCiAgICBsb2NhbC5zZXQgNwogICAgaTMyLmNvbnN0IDEKICAgIGxvY2FsLnNldCA4CiAgICBsb2NhbC5nZXQgNwogICAgbG9jYWwuZ2V0IDgKICAgIGkzMi5hbmQKICAgIGxvY2FsLnNldCA5CiAgICBsb2NhbC5nZXQgOQogICAgcmV0dXJuKQogICh0YWJsZSAoOzA7KSAxIDEgZnVuY3JlZikKICAobWVtb3J5ICg7MDspIDE2KQogIChnbG9iYWwgJF9fc3RhY2tfcG9pbnRlciAobXV0IGkzMikgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MTspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsyOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGV4cG9ydCAibWVtb3J5IiAobWVtb3J5IDApKQogIChleHBvcnQgImxlc3NfdGhhbiIgKGZ1bmMgJGxlc3NfdGhhbikpCiAgKGV4cG9ydCAiX19kYXRhX2VuZCIgKGdsb2JhbCAxKSkKICAoZXhwb3J0ICJfX2hlYXBfYmFzZSIgKGdsb2JhbCAyKSkpCg=="
+	case funcName == "multiple_columns":
+		dataTypes = append(dataTypes, schemapb.DataType_Int8)
+		dataTypes = append(dataTypes, schemapb.DataType_Int16)
+		dataTypes = append(dataTypes, schemapb.DataType_Int32)
+		dataTypes = append(dataTypes, schemapb.DataType_Int64)
+		dataTypes = append(dataTypes, schemapb.DataType_Int64)
+		wasmBody = "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBpMzIgaTMyIGkzMiBpNjQgaTY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRtdWx0aXBsZV9jb2x1bW5zICh0eXBlIDApIChwYXJhbSBpMzIgaTMyIGkzMiBpNjQgaTY0KSAocmVzdWx0IGkzMikKICAgIGxvY2FsLmdldCAxCiAgICBpNjQuZXh0ZW5kX2kzMl91CiAgICBpNjQuY29uc3QgNDgKICAgIGk2NC5zaGwKICAgIGk2NC5jb25zdCA0OAogICAgaTY0LnNocl9zCiAgICBsb2NhbC5nZXQgMAogICAgaTY0LmV4dGVuZF9pMzJfdQogICAgaTY0LmNvbnN0IDU2CiAgICBpNjQuc2hsCiAgICBpNjQuY29uc3QgNTYKICAgIGk2NC5zaHJfcwogICAgaTY0LmFkZAogICAgbG9jYWwuZ2V0IDIKICAgIGk2NC5leHRlbmRfaTMyX3MKICAgIGk2NC5hZGQKICAgIGxvY2FsLmdldCAzCiAgICBpNjQuYWRkCiAgICBsb2NhbC5nZXQgNAogICAgaTY0Lmd0X3MpCiAgKHRhYmxlICg7MDspIDEgMSBmdW5jcmVmKQogIChtZW1vcnkgKDswOykgMTYpCiAgKGdsb2JhbCAkX19zdGFja19wb2ludGVyIChtdXQgaTMyKSAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsxOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGdsb2JhbCAoOzI7KSBpMzIgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZXhwb3J0ICJtZW1vcnkiIChtZW1vcnkgMCkpCiAgKGV4cG9ydCAibXVsdGlwbGVfY29sdW1ucyIgKGZ1bmMgJG11bHRpcGxlX2NvbHVtbnMpKQogIChleHBvcnQgIl9fZGF0YV9lbmQiIChnbG9iYWwgMSkpCiAgKGV4cG9ydCAiX19oZWFwX2Jhc2UiIChnbG9iYWwgMikpKQ=="
+	default:
+		dataTypes = make([]schemapb.DataType, 0, lenOfAllExpr)
+		wasmBody = "not implemented"
+	}
+
 	expr := &planpb.Expr{
 		Expr: &planpb.Expr_UdfExpr{
 			UdfExpr: &planpb.UdfExpr{
 				UdfFuncName: funcName,
-				UdfArgs:     udfArgs,
+				UdfParams:   udfParams,
 				WasmBody:    wasmBody,
+				ArgTypes:    dataTypes,
 			},
 		},
 	}

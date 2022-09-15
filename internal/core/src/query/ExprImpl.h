@@ -75,16 +75,4 @@ struct BinaryRangeExprImpl : BinaryRangeExpr {
           upper_value_(upper_value) {
     }
 };
-
-template <typename T>
-struct UdfExprImpl : UdfExpr {
-    const std::vector<T> terms_;
-
-    UdfExprImpl(const std::string func_name, const std::string wasm_body, const FieldId field_id, const DataType data_type, const std::vector<T>& terms)
-            : UdfExpr(func_name, wasm_body, field_id, data_type), terms_(terms) {
-    }
-
-
-};
-
 }  // namespace milvus::query

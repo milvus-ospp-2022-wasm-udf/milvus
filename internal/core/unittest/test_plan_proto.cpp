@@ -170,18 +170,20 @@ vector_anns: <
   predicates: <
     udf_expr: <
       udf_func_name: "larger_than"
-      udf_args: <
+      udf_params: <
         column_info: <
           field_id: 101
           data_type: Double
         >
       >
-      udf_args: <
+      udf_params: <
         value: <
-          float_val: 0.5
+          int64_val: 2000
         >
       >
       wasm_body: "not implemented"
+      arg_types: Int16
+      arg_types: Double
     >
   >
   query_info: <

@@ -12,6 +12,7 @@
 #include <google/protobuf/text_format.h>
 
 #include <string>
+#include <boost/variant.hpp>
 
 #include "ExprImpl.h"
 #include "PlanProto.h"
@@ -411,73 +412,57 @@ ProtoParser::ParseBinaryArithOpEvalRangeExpr(const proto::plan::BinaryArithOpEva
     return result;
 }
 
-template <typename T>
-std::unique_ptr<UdfExprImpl<T>>
-ExtractUdfExprImpl(FieldId field_id, DataType data_type, const planpb::UdfExpr& expr_proto) {
-    auto func_name = expr_proto.udf_func_name();
-    auto udf_args = expr_proto.udf_args();
-    auto wasm_body = expr_proto.wasm_body();
-    static_assert(IsScalar<T>);
-    auto size = udf_args.size();
-    std::vector<T> terms(size);
-    for (int i = 1; i < size; ++i) {
-        auto& value_proto = udf_args[i].value();
-        if constexpr (std::is_same_v<T, bool>) {
-            Assert(value_proto.val_case() == planpb::GenericValue::kBoolVal);
-            terms[i] = static_cast<T>(value_proto.bool_val());
-        } else if constexpr (std::is_integral_v<T>) {
-            Assert(value_proto.val_case() == planpb::GenericValue::kInt64Val);
-            terms[i] = static_cast<T>(value_proto.int64_val());
-        } else if constexpr (std::is_floating_point_v<T>) {
-            Assert(value_proto.val_case() == planpb::GenericValue::kFloatVal);
-            terms[i] = static_cast<T>(value_proto.float_val());
-        } else if constexpr (std::is_same_v<T, std::string>) {
-            Assert(value_proto.val_case() == planpb::GenericValue::kStringVal);
-            terms[i] = static_cast<T>(value_proto.string_val());
-        } else {
-            static_assert(always_false<T>);
-        }
-    }
-    return std::make_unique<UdfExprImpl<T>>(func_name, wasm_body, field_id, data_type, terms);
-}
-
 ExprPtr
 ProtoParser::ParseUdfExpr(const proto::plan::UdfExpr &expr_pb) {
-    auto& column_info = expr_pb.udf_args()[0].column_info();
-    auto field_id = FieldId(column_info.field_id());
-    auto data_type = schema[field_id].get_data_type();
-    Assert(data_type == static_cast<DataType>(column_info.data_type()));
+    using param = boost::variant<bool, int8_t, int16_t, int32_t, int64_t, float, double, FieldId>;
 
-    // auto& field_meta = schema[field_offset];
-    auto result = [&]() -> ExprPtr {
-        switch (data_type) {
-            case DataType::BOOL: {
-                return ExtractUdfExprImpl<bool>(field_id, data_type, expr_pb);
+    auto func_name = expr_pb.udf_func_name();
+    auto udf_params = expr_pb.udf_params();
+    auto size = udf_params.size();
+    std::vector<param> values;
+    auto wasm_body = expr_pb.wasm_body();
+    auto expr_args = expr_pb.arg_types();
+
+    std::vector<DataType> arg_types;
+    std::vector<bool> is_field;
+
+    for (int i = 0; i < size; ++i) {
+        arg_types.emplace_back(static_cast<DataType>(expr_args[i]));
+    }
+    // TODO(wang ziyu): Add assert check about data_type transformer between values and arg_types
+
+    for (int i = 0; i < size; ++i) {
+        if(udf_params[i].has_column_info()){
+            auto& column_info = udf_params[i].column_info();
+            auto field_id = FieldId(column_info.field_id());
+            auto data_type = schema[field_id].get_data_type();
+            Assert(data_type == static_cast<DataType>(column_info.data_type()));
+            AssertInfo(arg_types[i] == data_type,
+                       "[ExecExprVisitor]Column data type not equal to argument type");
+            values.emplace_back(field_id);
+            is_field.emplace_back(true);
+        } else if(udf_params[i].has_value()){
+            auto& value_proto = udf_params[i].value();
+            is_field.emplace_back(false);
+            switch (value_proto.val_case()) {
+                case proto::plan::GenericValue::kBoolVal:
+                    values.emplace_back(value_proto.bool_val());
+                    break;
+                case proto::plan::GenericValue::kInt64Val:
+                    values.emplace_back(value_proto.int64_val());
+                    break;
+                case proto::plan::GenericValue::kFloatVal:
+                    values.emplace_back(value_proto.float_val());
+                    break;
+                default: {
+                    PanicInfo("unsupported data type");
+                }
             }
-            case DataType::INT8: {
-                return ExtractUdfExprImpl<int8_t>(field_id, data_type, expr_pb);
-            }
-            case DataType::INT16: {
-                return ExtractUdfExprImpl<int16_t>(field_id, data_type, expr_pb);
-            }
-            case DataType::INT32: {
-                return ExtractUdfExprImpl<int32_t>(field_id, data_type, expr_pb);
-            }
-            case DataType::INT64: {
-                return ExtractUdfExprImpl<int64_t>(field_id, data_type, expr_pb);
-            }
-            case DataType::FLOAT: {
-                return ExtractUdfExprImpl<float>(field_id, data_type, expr_pb);
-            }
-            case DataType::DOUBLE: {
-                return ExtractUdfExprImpl<double>(field_id, data_type, expr_pb);
-            }
-            default: {
-                PanicInfo("unsupported data type");
-            }
+        } else {
+            PanicInfo("unsupported data type");
         }
-    }();
-    return result;
+    }
+    return std::make_unique<UdfExpr>(func_name, values, is_field, wasm_body, arg_types);
 }
 
 ExprPtr
