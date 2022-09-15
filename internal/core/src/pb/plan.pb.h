@@ -98,12 +98,12 @@ extern QueryInfoDefaultTypeInternal _QueryInfo_default_instance_;
 class TermExpr;
 class TermExprDefaultTypeInternal;
 extern TermExprDefaultTypeInternal _TermExpr_default_instance_;
-class UdfArg;
-class UdfArgDefaultTypeInternal;
-extern UdfArgDefaultTypeInternal _UdfArg_default_instance_;
 class UdfExpr;
 class UdfExprDefaultTypeInternal;
 extern UdfExprDefaultTypeInternal _UdfExpr_default_instance_;
+class UdfParams;
+class UdfParamsDefaultTypeInternal;
+extern UdfParamsDefaultTypeInternal _UdfParams_default_instance_;
 class UnaryExpr;
 class UnaryExprDefaultTypeInternal;
 extern UnaryExprDefaultTypeInternal _UnaryExpr_default_instance_;
@@ -133,8 +133,8 @@ template<> ::milvus::proto::plan::GenericValue* Arena::CreateMaybeMessage<::milv
 template<> ::milvus::proto::plan::PlanNode* Arena::CreateMaybeMessage<::milvus::proto::plan::PlanNode>(Arena*);
 template<> ::milvus::proto::plan::QueryInfo* Arena::CreateMaybeMessage<::milvus::proto::plan::QueryInfo>(Arena*);
 template<> ::milvus::proto::plan::TermExpr* Arena::CreateMaybeMessage<::milvus::proto::plan::TermExpr>(Arena*);
-template<> ::milvus::proto::plan::UdfArg* Arena::CreateMaybeMessage<::milvus::proto::plan::UdfArg>(Arena*);
 template<> ::milvus::proto::plan::UdfExpr* Arena::CreateMaybeMessage<::milvus::proto::plan::UdfExpr>(Arena*);
+template<> ::milvus::proto::plan::UdfParams* Arena::CreateMaybeMessage<::milvus::proto::plan::UdfParams>(Arena*);
 template<> ::milvus::proto::plan::UnaryExpr* Arena::CreateMaybeMessage<::milvus::proto::plan::UnaryExpr>(Arena*);
 template<> ::milvus::proto::plan::UnaryRangeExpr* Arena::CreateMaybeMessage<::milvus::proto::plan::UnaryRangeExpr>(Arena*);
 template<> ::milvus::proto::plan::ValueExpr* Arena::CreateMaybeMessage<::milvus::proto::plan::ValueExpr>(Arena*);
@@ -2479,23 +2479,23 @@ class BinaryArithOpEvalRangeExpr :
 };
 // -------------------------------------------------------------------
 
-class UdfArg :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:milvus.proto.plan.UdfArg) */ {
+class UdfParams :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:milvus.proto.plan.UdfParams) */ {
  public:
-  UdfArg();
-  virtual ~UdfArg();
+  UdfParams();
+  virtual ~UdfParams();
 
-  UdfArg(const UdfArg& from);
-  UdfArg(UdfArg&& from) noexcept
-    : UdfArg() {
+  UdfParams(const UdfParams& from);
+  UdfParams(UdfParams&& from) noexcept
+    : UdfParams() {
     *this = ::std::move(from);
   }
 
-  inline UdfArg& operator=(const UdfArg& from) {
+  inline UdfParams& operator=(const UdfParams& from) {
     CopyFrom(from);
     return *this;
   }
-  inline UdfArg& operator=(UdfArg&& from) noexcept {
+  inline UdfParams& operator=(UdfParams&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -2513,7 +2513,7 @@ class UdfArg :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const UdfArg& default_instance();
+  static const UdfParams& default_instance();
 
   enum ValCase {
     kValue = 1,
@@ -2522,34 +2522,34 @@ class UdfArg :
   };
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const UdfArg* internal_default_instance() {
-    return reinterpret_cast<const UdfArg*>(
-               &_UdfArg_default_instance_);
+  static inline const UdfParams* internal_default_instance() {
+    return reinterpret_cast<const UdfParams*>(
+               &_UdfParams_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     14;
 
-  friend void swap(UdfArg& a, UdfArg& b) {
+  friend void swap(UdfParams& a, UdfParams& b) {
     a.Swap(&b);
   }
-  inline void Swap(UdfArg* other) {
+  inline void Swap(UdfParams* other) {
     if (other == this) return;
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
-  inline UdfArg* New() const final {
-    return CreateMaybeMessage<UdfArg>(nullptr);
+  inline UdfParams* New() const final {
+    return CreateMaybeMessage<UdfParams>(nullptr);
   }
 
-  UdfArg* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<UdfArg>(arena);
+  UdfParams* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<UdfParams>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const UdfArg& from);
-  void MergeFrom(const UdfArg& from);
+  void CopyFrom(const UdfParams& from);
+  void MergeFrom(const UdfParams& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -2570,10 +2570,10 @@ class UdfArg :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(UdfArg* other);
+  void InternalSwap(UdfParams* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "milvus.proto.plan.UdfArg";
+    return "milvus.proto.plan.UdfParams";
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
@@ -2619,7 +2619,7 @@ class UdfArg :
 
   void clear_val();
   ValCase val_case() const;
-  // @@protoc_insertion_point(class_scope:milvus.proto.plan.UdfArg)
+  // @@protoc_insertion_point(class_scope:milvus.proto.plan.UdfParams)
  private:
   class _Internal;
   void set_has_value();
@@ -2754,20 +2754,30 @@ class UdfExpr :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kUdfArgsFieldNumber = 2,
+    kUdfParamsFieldNumber = 2,
+    kArgTypesFieldNumber = 4,
     kUdfFuncNameFieldNumber = 1,
     kWasmBodyFieldNumber = 3,
   };
-  // repeated .milvus.proto.plan.UdfArg udf_args = 2;
-  int udf_args_size() const;
-  void clear_udf_args();
-  ::milvus::proto::plan::UdfArg* mutable_udf_args(int index);
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfArg >*
-      mutable_udf_args();
-  const ::milvus::proto::plan::UdfArg& udf_args(int index) const;
-  ::milvus::proto::plan::UdfArg* add_udf_args();
-  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfArg >&
-      udf_args() const;
+  // repeated .milvus.proto.plan.UdfParams udf_params = 2;
+  int udf_params_size() const;
+  void clear_udf_params();
+  ::milvus::proto::plan::UdfParams* mutable_udf_params(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfParams >*
+      mutable_udf_params();
+  const ::milvus::proto::plan::UdfParams& udf_params(int index) const;
+  ::milvus::proto::plan::UdfParams* add_udf_params();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfParams >&
+      udf_params() const;
+
+  // repeated .milvus.proto.schema.DataType arg_types = 4;
+  int arg_types_size() const;
+  void clear_arg_types();
+  ::milvus::proto::schema::DataType arg_types(int index) const;
+  void set_arg_types(int index, ::milvus::proto::schema::DataType value);
+  void add_arg_types(::milvus::proto::schema::DataType value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>& arg_types() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>* mutable_arg_types();
 
   // string udf_func_name = 1;
   void clear_udf_func_name();
@@ -2780,13 +2790,13 @@ class UdfExpr :
   std::string* release_udf_func_name();
   void set_allocated_udf_func_name(std::string* udf_func_name);
 
-  // bytes wasm_body = 3;
+  // string wasm_body = 3;
   void clear_wasm_body();
   const std::string& wasm_body() const;
   void set_wasm_body(const std::string& value);
   void set_wasm_body(std::string&& value);
   void set_wasm_body(const char* value);
-  void set_wasm_body(const void* value, size_t size);
+  void set_wasm_body(const char* value, size_t size);
   std::string* mutable_wasm_body();
   std::string* release_wasm_body();
   void set_allocated_wasm_body(std::string* wasm_body);
@@ -2796,7 +2806,9 @@ class UdfExpr :
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfArg > udf_args_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfParams > udf_params_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField<int> arg_types_;
+  mutable std::atomic<int> _arg_types_cached_byte_size_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr udf_func_name_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr wasm_body_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -5046,23 +5058,23 @@ inline void BinaryArithOpEvalRangeExpr::set_allocated_value(::milvus::proto::pla
 
 // -------------------------------------------------------------------
 
-// UdfArg
+// UdfParams
 
 // .milvus.proto.plan.GenericValue value = 1;
-inline bool UdfArg::has_value() const {
+inline bool UdfParams::has_value() const {
   return val_case() == kValue;
 }
-inline void UdfArg::set_has_value() {
+inline void UdfParams::set_has_value() {
   _oneof_case_[0] = kValue;
 }
-inline void UdfArg::clear_value() {
+inline void UdfParams::clear_value() {
   if (has_value()) {
     delete val_.value_;
     clear_has_val();
   }
 }
-inline ::milvus::proto::plan::GenericValue* UdfArg::release_value() {
-  // @@protoc_insertion_point(field_release:milvus.proto.plan.UdfArg.value)
+inline ::milvus::proto::plan::GenericValue* UdfParams::release_value() {
+  // @@protoc_insertion_point(field_release:milvus.proto.plan.UdfParams.value)
   if (has_value()) {
     clear_has_val();
       ::milvus::proto::plan::GenericValue* temp = val_.value_;
@@ -5072,38 +5084,38 @@ inline ::milvus::proto::plan::GenericValue* UdfArg::release_value() {
     return nullptr;
   }
 }
-inline const ::milvus::proto::plan::GenericValue& UdfArg::value() const {
-  // @@protoc_insertion_point(field_get:milvus.proto.plan.UdfArg.value)
+inline const ::milvus::proto::plan::GenericValue& UdfParams::value() const {
+  // @@protoc_insertion_point(field_get:milvus.proto.plan.UdfParams.value)
   return has_value()
       ? *val_.value_
       : *reinterpret_cast< ::milvus::proto::plan::GenericValue*>(&::milvus::proto::plan::_GenericValue_default_instance_);
 }
-inline ::milvus::proto::plan::GenericValue* UdfArg::mutable_value() {
+inline ::milvus::proto::plan::GenericValue* UdfParams::mutable_value() {
   if (!has_value()) {
     clear_val();
     set_has_value();
     val_.value_ = CreateMaybeMessage< ::milvus::proto::plan::GenericValue >(
         GetArenaNoVirtual());
   }
-  // @@protoc_insertion_point(field_mutable:milvus.proto.plan.UdfArg.value)
+  // @@protoc_insertion_point(field_mutable:milvus.proto.plan.UdfParams.value)
   return val_.value_;
 }
 
 // .milvus.proto.plan.ColumnInfo column_info = 2;
-inline bool UdfArg::has_column_info() const {
+inline bool UdfParams::has_column_info() const {
   return val_case() == kColumnInfo;
 }
-inline void UdfArg::set_has_column_info() {
+inline void UdfParams::set_has_column_info() {
   _oneof_case_[0] = kColumnInfo;
 }
-inline void UdfArg::clear_column_info() {
+inline void UdfParams::clear_column_info() {
   if (has_column_info()) {
     delete val_.column_info_;
     clear_has_val();
   }
 }
-inline ::milvus::proto::plan::ColumnInfo* UdfArg::release_column_info() {
-  // @@protoc_insertion_point(field_release:milvus.proto.plan.UdfArg.column_info)
+inline ::milvus::proto::plan::ColumnInfo* UdfParams::release_column_info() {
+  // @@protoc_insertion_point(field_release:milvus.proto.plan.UdfParams.column_info)
   if (has_column_info()) {
     clear_has_val();
       ::milvus::proto::plan::ColumnInfo* temp = val_.column_info_;
@@ -5113,31 +5125,31 @@ inline ::milvus::proto::plan::ColumnInfo* UdfArg::release_column_info() {
     return nullptr;
   }
 }
-inline const ::milvus::proto::plan::ColumnInfo& UdfArg::column_info() const {
-  // @@protoc_insertion_point(field_get:milvus.proto.plan.UdfArg.column_info)
+inline const ::milvus::proto::plan::ColumnInfo& UdfParams::column_info() const {
+  // @@protoc_insertion_point(field_get:milvus.proto.plan.UdfParams.column_info)
   return has_column_info()
       ? *val_.column_info_
       : *reinterpret_cast< ::milvus::proto::plan::ColumnInfo*>(&::milvus::proto::plan::_ColumnInfo_default_instance_);
 }
-inline ::milvus::proto::plan::ColumnInfo* UdfArg::mutable_column_info() {
+inline ::milvus::proto::plan::ColumnInfo* UdfParams::mutable_column_info() {
   if (!has_column_info()) {
     clear_val();
     set_has_column_info();
     val_.column_info_ = CreateMaybeMessage< ::milvus::proto::plan::ColumnInfo >(
         GetArenaNoVirtual());
   }
-  // @@protoc_insertion_point(field_mutable:milvus.proto.plan.UdfArg.column_info)
+  // @@protoc_insertion_point(field_mutable:milvus.proto.plan.UdfParams.column_info)
   return val_.column_info_;
 }
 
-inline bool UdfArg::has_val() const {
+inline bool UdfParams::has_val() const {
   return val_case() != VAL_NOT_SET;
 }
-inline void UdfArg::clear_has_val() {
+inline void UdfParams::clear_has_val() {
   _oneof_case_[0] = VAL_NOT_SET;
 }
-inline UdfArg::ValCase UdfArg::val_case() const {
-  return UdfArg::ValCase(_oneof_case_[0]);
+inline UdfParams::ValCase UdfParams::val_case() const {
+  return UdfParams::ValCase(_oneof_case_[0]);
 }
 // -------------------------------------------------------------------
 
@@ -5194,37 +5206,37 @@ inline void UdfExpr::set_allocated_udf_func_name(std::string* udf_func_name) {
   // @@protoc_insertion_point(field_set_allocated:milvus.proto.plan.UdfExpr.udf_func_name)
 }
 
-// repeated .milvus.proto.plan.UdfArg udf_args = 2;
-inline int UdfExpr::udf_args_size() const {
-  return udf_args_.size();
+// repeated .milvus.proto.plan.UdfParams udf_params = 2;
+inline int UdfExpr::udf_params_size() const {
+  return udf_params_.size();
 }
-inline void UdfExpr::clear_udf_args() {
-  udf_args_.Clear();
+inline void UdfExpr::clear_udf_params() {
+  udf_params_.Clear();
 }
-inline ::milvus::proto::plan::UdfArg* UdfExpr::mutable_udf_args(int index) {
-  // @@protoc_insertion_point(field_mutable:milvus.proto.plan.UdfExpr.udf_args)
-  return udf_args_.Mutable(index);
+inline ::milvus::proto::plan::UdfParams* UdfExpr::mutable_udf_params(int index) {
+  // @@protoc_insertion_point(field_mutable:milvus.proto.plan.UdfExpr.udf_params)
+  return udf_params_.Mutable(index);
 }
-inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfArg >*
-UdfExpr::mutable_udf_args() {
-  // @@protoc_insertion_point(field_mutable_list:milvus.proto.plan.UdfExpr.udf_args)
-  return &udf_args_;
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfParams >*
+UdfExpr::mutable_udf_params() {
+  // @@protoc_insertion_point(field_mutable_list:milvus.proto.plan.UdfExpr.udf_params)
+  return &udf_params_;
 }
-inline const ::milvus::proto::plan::UdfArg& UdfExpr::udf_args(int index) const {
-  // @@protoc_insertion_point(field_get:milvus.proto.plan.UdfExpr.udf_args)
-  return udf_args_.Get(index);
+inline const ::milvus::proto::plan::UdfParams& UdfExpr::udf_params(int index) const {
+  // @@protoc_insertion_point(field_get:milvus.proto.plan.UdfExpr.udf_params)
+  return udf_params_.Get(index);
 }
-inline ::milvus::proto::plan::UdfArg* UdfExpr::add_udf_args() {
-  // @@protoc_insertion_point(field_add:milvus.proto.plan.UdfExpr.udf_args)
-  return udf_args_.Add();
+inline ::milvus::proto::plan::UdfParams* UdfExpr::add_udf_params() {
+  // @@protoc_insertion_point(field_add:milvus.proto.plan.UdfExpr.udf_params)
+  return udf_params_.Add();
 }
-inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfArg >&
-UdfExpr::udf_args() const {
-  // @@protoc_insertion_point(field_list:milvus.proto.plan.UdfExpr.udf_args)
-  return udf_args_;
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::milvus::proto::plan::UdfParams >&
+UdfExpr::udf_params() const {
+  // @@protoc_insertion_point(field_list:milvus.proto.plan.UdfExpr.udf_params)
+  return udf_params_;
 }
 
-// bytes wasm_body = 3;
+// string wasm_body = 3;
 inline void UdfExpr::clear_wasm_body() {
   wasm_body_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -5249,7 +5261,7 @@ inline void UdfExpr::set_wasm_body(const char* value) {
   wasm_body_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:milvus.proto.plan.UdfExpr.wasm_body)
 }
-inline void UdfExpr::set_wasm_body(const void* value, size_t size) {
+inline void UdfExpr::set_wasm_body(const char* value, size_t size) {
   
   wasm_body_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
@@ -5273,6 +5285,36 @@ inline void UdfExpr::set_allocated_wasm_body(std::string* wasm_body) {
   }
   wasm_body_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), wasm_body);
   // @@protoc_insertion_point(field_set_allocated:milvus.proto.plan.UdfExpr.wasm_body)
+}
+
+// repeated .milvus.proto.schema.DataType arg_types = 4;
+inline int UdfExpr::arg_types_size() const {
+  return arg_types_.size();
+}
+inline void UdfExpr::clear_arg_types() {
+  arg_types_.Clear();
+}
+inline ::milvus::proto::schema::DataType UdfExpr::arg_types(int index) const {
+  // @@protoc_insertion_point(field_get:milvus.proto.plan.UdfExpr.arg_types)
+  return static_cast< ::milvus::proto::schema::DataType >(arg_types_.Get(index));
+}
+inline void UdfExpr::set_arg_types(int index, ::milvus::proto::schema::DataType value) {
+  arg_types_.Set(index, value);
+  // @@protoc_insertion_point(field_set:milvus.proto.plan.UdfExpr.arg_types)
+}
+inline void UdfExpr::add_arg_types(::milvus::proto::schema::DataType value) {
+  arg_types_.Add(value);
+  // @@protoc_insertion_point(field_add:milvus.proto.plan.UdfExpr.arg_types)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>&
+UdfExpr::arg_types() const {
+  // @@protoc_insertion_point(field_list:milvus.proto.plan.UdfExpr.arg_types)
+  return arg_types_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField<int>*
+UdfExpr::mutable_arg_types() {
+  // @@protoc_insertion_point(field_mutable_list:milvus.proto.plan.UdfExpr.arg_types)
+  return &arg_types_;
 }
 
 // -------------------------------------------------------------------

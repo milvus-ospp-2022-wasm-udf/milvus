@@ -161,8 +161,8 @@ func (v *ShowExprVisitor) VisitUdfExpr(expr *planpb.UdfExpr) interface{} {
 	js := make(map[string]interface{})
 	js["expr_type"] = "udf"
 	js["udf_func_name"] = expr.GetUdfFuncName()
-	udfArgs := make([]interface{}, 0, len(expr.UdfArgs))
-	for _, v := range expr.UdfArgs {
+	udfArgs := make([]interface{}, 0, len(expr.UdfParams))
+	for _, v := range expr.UdfParams {
 		col := v.GetColumnInfo()
 		if col != nil {
 			udfArgs = append(udfArgs, extractColumnInfo(col))
@@ -174,6 +174,7 @@ func (v *ShowExprVisitor) VisitUdfExpr(expr *planpb.UdfExpr) interface{} {
 	}
 	js["udf_args"] = udfArgs
 	js["wasm_body"] = expr.GetWasmBody()
+	js["arg_types"] = expr.GetArgTypes()
 	return js
 }
 

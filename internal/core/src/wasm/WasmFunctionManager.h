@@ -20,6 +20,7 @@
 #include <wasmtime/wasmtime.hh>
 #include <unordered_map>
 #include <cassert>
+#include <boost/variant.hpp>
 
 namespace milvus {
 
@@ -168,19 +169,11 @@ public:
         return retval;
     }
 
-    template<typename T>
+
     bool
-    runElemFunc(const std::string functionName, std::vector<T> args){
-        std::vector<wasmtime::Val> result;
+    runElemFunc(const std::string functionName, std::vector<wasmtime::Val> args){
         auto module = modules.at(functionName);
-
-        std::vector<wasmtime::Val> argv;
-        for (size_t i = 0; i < args.size(); ++i) {
-            auto val = wasmtime::Val(args[i]);
-            argv.emplace_back(val);
-        }
-
-        auto results = module.func.call(store, argv).unwrap();
+        auto results = module.func.call(store, args).unwrap();
         return results[0].i32();
     }
 };

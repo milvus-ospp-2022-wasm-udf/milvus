@@ -51,15 +51,15 @@ TEST(WasmFunctionManagerTest, larger_than){
     WasmFunctionManager& wasmFunctionManager = WasmFunctionManager::getInstance();
     wasmFunctionManager.RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"larger_than","larger_than",WatBase64Str);
 
-    std::vector<double> args = {0.5, 0.6};
-    auto result = wasmFunctionManager.runElemFunc<double>("larger_than", args);
-    printf("The result of larger_than(%f, %f) is %d\n", args[0], args[1], result);
+    std::vector<wasmtime::Val> args = {0.5, 0.6};
+    bool result = wasmFunctionManager.runElemFunc("larger_than", args);
+    printf("The result of larger_than is %d\n", result);
 
     WasmFunctionManager::getInstance().RegisterFunction(WasmFunctionManager::TYPE_WAT_MODULE,"larger_than","larger_than",WatBase64Str);
 
     args = {0.5, 0.4};
-    result = wasmFunctionManager.runElemFunc<double>("larger_than", args);
-    printf("The result of larger_than(%f, %f) is %d\n", args[0], args[1], result);
+    result = wasmFunctionManager.runElemFunc("larger_than", args);
+    printf("The result of larger_than is %d\n", result);
 }
 
 }  // namespace milvus

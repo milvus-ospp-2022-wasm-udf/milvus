@@ -1442,24 +1442,82 @@ TEST(Expr, TestBinaryArithOpEvalRangeWithScalarSortIndex) {
 TEST(Expr, TestUdfExpr) {
     using namespace milvus::query;
     using namespace milvus::segcore;
-    std::vector<std::tuple<std::string, std::function<bool(int)>, DataType>> testcases = {
-        // Add test cases for UdfExpr EQ of various data types
-        {R"(udf_func_name: "smaller_than"
-        udf_args: <
-            column_info: <
-                field_id: %2%
-                data_type: %3%
-            >
-        >
-        udf_args: <
-            value: <
-              int64_val: 1000
-            >
-        >
-        wasm_body: "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBpNjQgaTY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRzbWFsbGVyX3RoYW4gKHR5cGUgMCkgKHBhcmFtIGk2NCBpNjQpIChyZXN1bHQgaTMyKQogICAgKGxvY2FsIGkzMiBpMzIgaTMyIGk2NCBpNjQgaTMyIGkzMiBpMzIpCiAgICBnbG9iYWwuZ2V0ICRfX3N0YWNrX3BvaW50ZXIKICAgIGxvY2FsLnNldCAyCiAgICBpMzIuY29uc3QgMTYKICAgIGxvY2FsLnNldCAzCiAgICBsb2NhbC5nZXQgMgogICAgbG9jYWwuZ2V0IDMKICAgIGkzMi5zdWIKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDAKICAgIGk2NC5zdG9yZQogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxCiAgICBpNjQuc3RvcmUgb2Zmc2V0PTgKICAgIGxvY2FsLmdldCAwCiAgICBsb2NhbC5zZXQgNQogICAgbG9jYWwuZ2V0IDEKICAgIGxvY2FsLnNldCA2CiAgICBsb2NhbC5nZXQgNQogICAgbG9jYWwuZ2V0IDYKICAgIGk2NC5sdF9zCiAgICBsb2NhbC5zZXQgNwogICAgaTMyLmNvbnN0IDEKICAgIGxvY2FsLnNldCA4CiAgICBsb2NhbC5nZXQgNwogICAgbG9jYWwuZ2V0IDgKICAgIGkzMi5hbmQKICAgIGxvY2FsLnNldCA5CiAgICBsb2NhbC5nZXQgOQogICAgcmV0dXJuKQogICh0YWJsZSAoOzA7KSAxIDEgZnVuY3JlZikKICAobWVtb3J5ICg7MDspIDE2KQogIChnbG9iYWwgJF9fc3RhY2tfcG9pbnRlciAobXV0IGkzMikgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MTspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsyOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGV4cG9ydCAibWVtb3J5IiAobWVtb3J5IDApKQogIChleHBvcnQgInNtYWxsZXJfdGhhbiIgKGZ1bmMgJHNtYWxsZXJfdGhhbikpCiAgKGV4cG9ydCAiX19kYXRhX2VuZCIgKGdsb2JhbCAxKSkKICAoZXhwb3J0ICJfX2hlYXBfYmFzZSIgKGdsb2JhbCAyKSkp"
-        )",
-         [](int64_t v) { return v < 1000; }, DataType::INT64},
-    };
+    // Add test cases for UdfExpr EQ of various data types
+    std::tuple<std::string, std::function<bool(int64_t, int64_t)>, std::string> testcase1 =
+        {R"(
+udf_func_name: "less_than"
+udf_params: <
+column_info: <
+  field_id: %2%
+  data_type: Int64
+>
+>
+udf_params: <
+value: <
+  int64_val: 2000
+>
+>
+wasm_body: "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBpNjQgaTY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRsZXNzX3RoYW4gKHR5cGUgMCkgKHBhcmFtIGk2NCBpNjQpIChyZXN1bHQgaTMyKQogICAgKGxvY2FsIGkzMiBpMzIgaTMyIGk2NCBpNjQgaTMyIGkzMiBpMzIpCiAgICBnbG9iYWwuZ2V0ICRfX3N0YWNrX3BvaW50ZXIKICAgIGxvY2FsLnNldCAyCiAgICBpMzIuY29uc3QgMTYKICAgIGxvY2FsLnNldCAzCiAgICBsb2NhbC5nZXQgMgogICAgbG9jYWwuZ2V0IDMKICAgIGkzMi5zdWIKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDAKICAgIGk2NC5zdG9yZQogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxCiAgICBpNjQuc3RvcmUgb2Zmc2V0PTgKICAgIGxvY2FsLmdldCAwCiAgICBsb2NhbC5zZXQgNQogICAgbG9jYWwuZ2V0IDEKICAgIGxvY2FsLnNldCA2CiAgICBsb2NhbC5nZXQgNQogICAgbG9jYWwuZ2V0IDYKICAgIGk2NC5sdF9zCiAgICBsb2NhbC5zZXQgNwogICAgaTMyLmNvbnN0IDEKICAgIGxvY2FsLnNldCA4CiAgICBsb2NhbC5nZXQgNwogICAgbG9jYWwuZ2V0IDgKICAgIGkzMi5hbmQKICAgIGxvY2FsLnNldCA5CiAgICBsb2NhbC5nZXQgOQogICAgcmV0dXJuKQogICh0YWJsZSAoOzA7KSAxIDEgZnVuY3JlZikKICAobWVtb3J5ICg7MDspIDE2KQogIChnbG9iYWwgJF9fc3RhY2tfcG9pbnRlciAobXV0IGkzMikgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MTspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsyOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGV4cG9ydCAibWVtb3J5IiAobWVtb3J5IDApKQogIChleHBvcnQgImxlc3NfdGhhbiIgKGZ1bmMgJGxlc3NfdGhhbikpCiAgKGV4cG9ydCAiX19kYXRhX2VuZCIgKGdsb2JhbCAxKSkKICAoZXhwb3J0ICJfX2hlYXBfYmFzZSIgKGdsb2JhbCAyKSkpCg=="
+arg_types: Int64
+arg_types: Int64
+        )", [](int64_t a, int64_t b) { return a < b; }, "less_than"};
+    std::tuple<std::string, std::function<bool(int8_t, int16_t, int32_t, int64_t, int64_t)>, std::string> testcase2 =
+            {R"(
+  udf_func_name: "multiple_columns"
+  udf_params: <
+    column_info: <
+      field_id: %2%
+      data_type: Int8
+    >
+  >
+  udf_params: <
+    column_info: <
+      field_id: %3%
+      data_type: Int16
+    >
+  >
+  udf_params: <
+    column_info: <
+      field_id: %4%
+      data_type: Int32
+    >
+  >
+  udf_params: <
+    column_info: <
+      field_id: %5%
+      data_type: Int64
+    >
+  >
+  udf_params: <
+    value: <
+      int64_val: 2000
+    >
+  >
+  wasm_body: "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBpMzIgaTMyIGkzMiBpNjQgaTY0KSAocmVzdWx0IGkzMikpKQogIChmdW5jICRtdWx0aXBsZV9jb2x1bW5zICh0eXBlIDApIChwYXJhbSBpMzIgaTMyIGkzMiBpNjQgaTY0KSAocmVzdWx0IGkzMikKICAgIGxvY2FsLmdldCAxCiAgICBpNjQuZXh0ZW5kX2kzMl91CiAgICBpNjQuY29uc3QgNDgKICAgIGk2NC5zaGwKICAgIGk2NC5jb25zdCA0OAogICAgaTY0LnNocl9zCiAgICBsb2NhbC5nZXQgMAogICAgaTY0LmV4dGVuZF9pMzJfdQogICAgaTY0LmNvbnN0IDU2CiAgICBpNjQuc2hsCiAgICBpNjQuY29uc3QgNTYKICAgIGk2NC5zaHJfcwogICAgaTY0LmFkZAogICAgbG9jYWwuZ2V0IDIKICAgIGk2NC5leHRlbmRfaTMyX3MKICAgIGk2NC5hZGQKICAgIGxvY2FsLmdldCAzCiAgICBpNjQuYWRkCiAgICBsb2NhbC5nZXQgNAogICAgaTY0Lmd0X3MpCiAgKHRhYmxlICg7MDspIDEgMSBmdW5jcmVmKQogIChtZW1vcnkgKDswOykgMTYpCiAgKGdsb2JhbCAkX19zdGFja19wb2ludGVyIChtdXQgaTMyKSAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChnbG9iYWwgKDsxOykgaTMyIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGdsb2JhbCAoOzI7KSBpMzIgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZXhwb3J0ICJtZW1vcnkiIChtZW1vcnkgMCkpCiAgKGV4cG9ydCAibXVsdGlwbGVfY29sdW1ucyIgKGZ1bmMgJG11bHRpcGxlX2NvbHVtbnMpKQogIChleHBvcnQgIl9fZGF0YV9lbmQiIChnbG9iYWwgMSkpCiAgKGV4cG9ydCAiX19oZWFwX2Jhc2UiIChnbG9iYWwgMikpKQ=="
+  arg_types: Int8
+  arg_types: Int16
+  arg_types: Int32
+  arg_types: Int64
+  arg_types: Int64
+        )", [](int8_t a, int16_t b, int32_t c, int64_t d, int64_t e) { return a + b + c + d > e; }, "multi_columns"};
+    std::tuple<std::string, std::function<bool(int64_t, double)>, std::string> testcase3 =
+            {R"(
+udf_func_name: "func_with_sqrt"
+udf_params: <
+column_info: <
+  field_id: %2%
+  data_type: Int64
+>
+>
+udf_params: <
+value: <
+  float_val: 40040.01
+>
+>
+wasm_body: "KG1vZHVsZQogICh0eXBlICg7MDspIChmdW5jIChwYXJhbSBpNjQgZjY0KSAocmVzdWx0IGkzMikpKQogICh0eXBlICg7MTspIChmdW5jIChwYXJhbSBmNjQpIChyZXN1bHQgZjY0KSkpCiAgKGZ1bmMgJGZ1bmNfd2l0aF9zcXJ0ICh0eXBlIDApIChwYXJhbSBpNjQgZjY0KSAocmVzdWx0IGkzMikKICAgIChsb2NhbCBpMzIgaTMyIGkzMiBmNjQgZjY0IGkzMiBpMzIgaTMyIGkzMiBpMzIpCiAgICBnbG9iYWwuZ2V0ICRfX3N0YWNrX3BvaW50ZXIKICAgIGxvY2FsLnNldCAyCiAgICBpMzIuY29uc3QgMzIKICAgIGxvY2FsLnNldCAzCiAgICBsb2NhbC5nZXQgMgogICAgbG9jYWwuZ2V0IDMKICAgIGkzMi5zdWIKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgNAogICAgZ2xvYmFsLnNldCAkX19zdGFja19wb2ludGVyCiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDAKICAgIGk2NC5zdG9yZSBvZmZzZXQ9OAogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxCiAgICBmNjQuc3RvcmUgb2Zmc2V0PTE2CiAgICBsb2NhbC5nZXQgMQogICAgY2FsbCAkX1pOM3N0ZDNmNjQyMV8kTFQkaW1wbCR1MjAkZjY0JEdUJDRzcXJ0MTdoMjQwM2I1MjhlZDM1YmZjN0UKICAgIGxvY2FsLnNldCA1CiAgICBsb2NhbC5nZXQgNAogICAgbG9jYWwuZ2V0IDUKICAgIGY2NC5zdG9yZSBvZmZzZXQ9MjQKICAgIGxvY2FsLmdldCAwCiAgICBmNjQuY29udmVydF9pNjRfcwogICAgbG9jYWwuc2V0IDYKICAgIGxvY2FsLmdldCA2CiAgICBsb2NhbC5nZXQgNQogICAgZjY0Lmd0CiAgICBsb2NhbC5zZXQgNwogICAgaTMyLmNvbnN0IDEKICAgIGxvY2FsLnNldCA4CiAgICBsb2NhbC5nZXQgNwogICAgbG9jYWwuZ2V0IDgKICAgIGkzMi5hbmQKICAgIGxvY2FsLnNldCA5CiAgICBpMzIuY29uc3QgMzIKICAgIGxvY2FsLnNldCAxMAogICAgbG9jYWwuZ2V0IDQKICAgIGxvY2FsLmdldCAxMAogICAgaTMyLmFkZAogICAgbG9jYWwuc2V0IDExCiAgICBsb2NhbC5nZXQgMTEKICAgIGdsb2JhbC5zZXQgJF9fc3RhY2tfcG9pbnRlcgogICAgbG9jYWwuZ2V0IDkKICAgIHJldHVybikKICAoZnVuYyAkX1pOM3N0ZDNmNjQyMV8kTFQkaW1wbCR1MjAkZjY0JEdUJDRzcXJ0MTdoMjQwM2I1MjhlZDM1YmZjN0UgKHR5cGUgMSkgKHBhcmFtIGY2NCkgKHJlc3VsdCBmNjQpCiAgICAobG9jYWwgaTMyIGkzMiBpMzIgZjY0IGY2NCkKICAgIGdsb2JhbC5nZXQgJF9fc3RhY2tfcG9pbnRlcgogICAgbG9jYWwuc2V0IDEKICAgIGkzMi5jb25zdCAxNgogICAgbG9jYWwuc2V0IDIKICAgIGxvY2FsLmdldCAxCiAgICBsb2NhbC5nZXQgMgogICAgaTMyLnN1YgogICAgbG9jYWwuc2V0IDMKICAgIGxvY2FsLmdldCAzCiAgICBsb2NhbC5nZXQgMAogICAgZjY0LnN0b3JlCiAgICBsb2NhbC5nZXQgMAogICAgZjY0LnNxcnQKICAgIGxvY2FsLnNldCA0CiAgICBsb2NhbC5nZXQgMwogICAgbG9jYWwuZ2V0IDQKICAgIGY2NC5zdG9yZSBvZmZzZXQ9OAogICAgbG9jYWwuZ2V0IDMKICAgIGY2NC5sb2FkIG9mZnNldD04CiAgICBsb2NhbC5zZXQgNQogICAgbG9jYWwuZ2V0IDUKICAgIHJldHVybikKICAodGFibGUgKDswOykgMSAxIGZ1bmNyZWYpCiAgKG1lbW9yeSAoOzA7KSAxNikKICAoZ2xvYmFsICRfX3N0YWNrX3BvaW50ZXIgKG11dCBpMzIpIChpMzIuY29uc3QgMTA0ODU3NikpCiAgKGdsb2JhbCAoOzE7KSBpMzIgKGkzMi5jb25zdCAxMDQ4NTc2KSkKICAoZ2xvYmFsICg7MjspIGkzMiAoaTMyLmNvbnN0IDEwNDg1NzYpKQogIChleHBvcnQgIm1lbW9yeSIgKG1lbW9yeSAwKSkKICAoZXhwb3J0ICJmdW5jX3dpdGhfc3FydCIgKGZ1bmMgJGZ1bmNfd2l0aF9zcXJ0KSkKICAoZXhwb3J0ICJfX2RhdGFfZW5kIiAoZ2xvYmFsIDEpKQogIChleHBvcnQgIl9faGVhcF9iYXNlIiAoZ2xvYmFsIDIpKSkK"
+arg_types: Int64
+arg_types: Double
+        )", [](int64_t a, double b) { return static_cast<double>(a) > sqrt(b); }, "func_with_sqrt"};
 
     std::string serialized_expr_plan = R"(
     vector_anns: <
@@ -1521,52 +1579,71 @@ TEST(Expr, TestUdfExpr) {
     auto seg_promote = dynamic_cast<SegmentGrowingImpl*>(seg.get());
     ExecExprVisitor visitor(*seg_promote, seg_promote->get_row_count(), MAX_TIMESTAMP);
 
-    for (auto [clause, ref_func, dtype] : testcases) {
-        auto loc = serialized_expr_plan.find("@@@@@");
-        auto expr_plan = serialized_expr_plan;
-        expr_plan.replace(loc, 5, clause);
-        boost::format expr;
+    // testcase1
+    auto clause1 = std::get<0>(testcase1);
+    auto ref_func1 = std::get<1>(testcase1);
+    auto udf_name1 = std::get<2>(testcase1);
+    auto loc = serialized_expr_plan.find("@@@@@");
+    auto expr_plan = serialized_expr_plan;
+    expr_plan.replace(loc, 5, clause1);
+    boost::format expr = boost::format(expr_plan) % vec_fid.get() % i64_fid.get();
+    auto binary_plan = translate_text_plan_to_binary_plan(expr.str().data());
+    auto plan = CreateSearchPlanByExpr(*schema, binary_plan.data(), binary_plan.size());
+    auto final = visitor.call_child(*plan->plan_node_->predicate_.value());
 
-        if(dtype==DataType::INT64){
-            expr = boost::format(expr_plan) % vec_fid.get() % i64_fid.get() %
-                   proto::schema::DataType_Name(static_cast<int>(DataType::INT64));
-        }
-
-        auto binary_plan = translate_text_plan_to_binary_plan(expr.str().data());
-        auto plan = CreateSearchPlanByExpr(*schema, binary_plan.data(), binary_plan.size());
-
-        auto final = visitor.call_child(*plan->plan_node_->predicate_.value());
-        EXPECT_EQ(final.size(), N * num_iters);
-
-        for (int i = 0; i < N * num_iters; ++i) {
-            auto ans = final[i];
-            if (dtype == DataType::INT8) {
-                auto val = age8_col[i];
-                auto ref = ref_func(val);
-                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
-            } else if (dtype == DataType::INT16) {
-                auto val = age16_col[i];
-                auto ref = ref_func(val);
-                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
-            } else if (dtype == DataType::INT32) {
-                auto val = age32_col[i];
-                auto ref = ref_func(val);
-                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
-            } else if (dtype == DataType::INT64) {
-                auto val = age64_col[i];
-                auto ref = ref_func(val);
-                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
-            } else if (dtype == DataType::FLOAT) {
-                auto val = age_float_col[i];
-                auto ref = ref_func(val);
-                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
-            } else if (dtype == DataType::DOUBLE) {
-                auto val = age_double_col[i];
-                auto ref = ref_func(val);
-                ASSERT_EQ(ans, ref) << clause << "@" << i << "!!" << val;
-            } else {
-                ASSERT_TRUE(false) << "No test case defined for this data type";
-            }
-        }
+    EXPECT_EQ(final.size(), N * num_iters);
+    for (int i = 0; i < N * num_iters; ++i) {
+        auto ans = final[i];
+        auto val1 = age64_col[i];
+        auto val2 = 2000;
+        auto ref = ref_func1(val1, val2);
+        ASSERT_EQ(ans, ref) << clause1 << "@" << udf_name1 << "@" << i << "!!" <<
+        boost::format("[%1%, %2%]") % val1 % val2;
     }
+
+    // testcase2
+    auto clause2= std::get<0>(testcase2);
+    auto ref_func2 = std::get<1>(testcase2);
+    auto udf_name2 = std::get<2>(testcase2);
+    loc = serialized_expr_plan.find("@@@@@");
+    expr_plan = serialized_expr_plan;
+    expr_plan.replace(loc, 5, clause2);
+    boost::format expr2 = boost::format(expr_plan) % vec_fid.get() % i8_fid.get() % i16_fid.get() % i32_fid.get() % i64_fid.get();
+    binary_plan = translate_text_plan_to_binary_plan(expr2.str().data());
+    plan = CreateSearchPlanByExpr(*schema, binary_plan.data(), binary_plan.size());
+    final = visitor.call_child(*plan->plan_node_->predicate_.value());
+
+    EXPECT_EQ(final.size(), N * num_iters);
+    for (int i = 0; i < N * num_iters; ++i) {
+        auto ans = final[i];
+        auto val1 = age8_col[i];
+        auto val2 = age16_col[i];
+        auto val3 = age32_col[i];
+        auto val4 = age64_col[i];
+        auto val5 = 2000;
+        auto ref = ref_func2(val1, val2, val3, val4, val5);
+        ASSERT_EQ(ans, ref) << clause2 << "@" << i << "!!" <<
+                            boost::format("[%1%, %2%, %3%, %4%, %5%]") % val1 % val2 % val3 % val4 % val5;
+    }
+    // testcase3
+//    auto clause3 = std::get<0>(testcase2);
+//    auto ref_func3 = std::get<1>(testcase2);
+//    auto udf_name3 = std::get<2>(testcase2);
+//    loc = serialized_expr_plan.find("@@@@@");
+//    expr_plan = serialized_expr_plan;
+//    expr_plan.replace(loc, 5, clause3);
+//    boost::format expr3 = boost::format(expr_plan) % vec_fid.get() % i64_fid.get();
+//    binary_plan = translate_text_plan_to_binary_plan(expr3.str().data());
+//    plan = CreateSearchPlanByExpr(*schema, binary_plan.data(), binary_plan.size());
+//    final = visitor.call_child(*plan->plan_node_->predicate_.value());
+//
+//    EXPECT_EQ(final.size(), N * num_iters);
+//    for (int i = 0; i < N * num_iters; ++i) {
+//        auto ans = final[i];
+//        auto val1 = age64_col[i];
+//        auto val2 = 40040.01;
+//        auto ref = ref_func2(val1, val2);
+//        ASSERT_EQ(ans, ref) << clause3 << "@" << i << "!!" <<
+//        boost::format("[%1%, %2%]") % val1 % val2;
+//    }
 }

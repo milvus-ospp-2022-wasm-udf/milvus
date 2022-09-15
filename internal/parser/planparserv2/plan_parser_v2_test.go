@@ -571,7 +571,8 @@ func TestExprTextString_UDF(t *testing.T) {
 
 	exprStrs := []string{
 		`UDF "funcName" [DoubleField, 2]`,
-		`UDF "smaller_than" [Int64Field, 2000]`,
+		`UDF "less_than" [Int64Field, 2000]`,
+		`UDF "multiple_columns" [Int8Field, Int16Field, Int32Field, Int64Field, 2000]`,
 	}
 
 	for _, exprStr := range exprStrs {
@@ -581,10 +582,4 @@ func TestExprTextString_UDF(t *testing.T) {
 		fmt.Printf(marshaledProtoPlan)
 		ShowExpr(expr)
 	}
-
-	exprStr := "vector_anns:<field_id:102 predicates:<udf_expr:<udf_func_name:\"larger_than\" udf_args:<column_info:<field_id:101 data_type:Double > > udf_args:<value:<float_val:0.5 > > wasm_body:\"not implemented\" > > query_info:<topk:3 metric_type:\"L2\" search_params:\"{\\\"nprobe\\\":10}\" round_decimal:-1 > placeholder_tag:\"$0\" > output_field_ids:101 "
-	pb := &planpb.PlanNode{}
-	err = proto.UnmarshalText(exprStr, pb)
-	marshaledProtoPlan := proto.MarshalTextString(pb)
-	fmt.Printf(marshaledProtoPlan)
 }

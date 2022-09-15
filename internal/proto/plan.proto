@@ -125,7 +125,7 @@ message BinaryArithOpEvalRangeExpr {
   GenericValue value = 5;
 }
 
-message UdfArg {
+message UdfParams {
   oneof val {
     GenericValue value = 1;
     ColumnInfo column_info = 2;
@@ -134,8 +134,9 @@ message UdfArg {
 
 message UdfExpr {
   string udf_func_name = 1;
-  repeated UdfArg udf_args = 2;
-  bytes wasm_body = 3;
+  repeated UdfParams udf_params = 2;
+  string wasm_body = 3;
+  repeated schema.DataType arg_types = 4;
 }
 
 message Expr {
