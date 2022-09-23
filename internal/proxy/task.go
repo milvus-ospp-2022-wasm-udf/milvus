@@ -88,6 +88,7 @@ const (
 	CreateAliasTaskName             = "CreateAliasTask"
 	DropAliasTaskName               = "DropAliasTask"
 	AlterAliasTaskName              = "AlterAliasTask"
+	CreateFunctionTaskName          = "CreateFunctionTask"
 
 	// minFloat32 minimum float.
 	minFloat32 = -1 * float32(math.MaxFloat32)
@@ -2743,5 +2744,68 @@ func (a *AlterAliasTask) Execute(ctx context.Context) error {
 }
 
 func (a *AlterAliasTask) PostExecute(ctx context.Context) error {
+	return nil
+}
+
+// CreateFunctionTask contains task information of CreateFunction
+type CreateFunctionTask struct {
+	Condition
+	*milvuspb.CreateFunctionRequest
+	ctx       context.Context
+	rootCoord types.RootCoord
+	result    *commonpb.Status
+}
+
+func (c *CreateFunctionTask) TraceCtx() context.Context {
+	return c.ctx
+}
+
+func (c *CreateFunctionTask) ID() UniqueID {
+	return c.Base.MsgID
+}
+
+func (c *CreateFunctionTask) SetID(uid UniqueID) {
+	c.Base.MsgID = uid
+}
+
+func (c *CreateFunctionTask) Name() string {
+	return CreateFunctionTaskName
+}
+
+func (c *CreateFunctionTask) Type() commonpb.MsgType {
+	return c.Base.MsgType
+}
+
+func (c *CreateFunctionTask) BeginTs() Timestamp {
+	return c.Base.Timestamp
+}
+
+func (c *CreateFunctionTask) EndTs() Timestamp {
+	return c.Base.Timestamp
+}
+
+func (c *CreateFunctionTask) SetTs(ts Timestamp) {
+	c.Base.Timestamp = ts
+}
+
+func (c *CreateFunctionTask) OnEnqueue() error {
+	c.Base = &commonpb.MsgBase{}
+	return nil
+}
+
+func (c *CreateFunctionTask) PreExecute(ctx context.Context) error {
+	c.Base.MsgType = commonpb.MsgType_CreateFunction
+	c.Base.SourceID = Params.ProxyCfg.GetNodeID()
+	return nil
+}
+
+func (c *CreateFunctionTask) Execute(ctx context.Context) error {
+	var err error
+	c.result, err = c.rootCoord.CreateFunction(ctx, c.CreateFunctionRequest)
+	return err
+}
+
+func (c *CreateFunctionTask) PostExecute(ctx context.Context) error {
+	//TODO implement me
 	return nil
 }

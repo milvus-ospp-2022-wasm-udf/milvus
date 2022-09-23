@@ -83,6 +83,8 @@ service MilvusService {
   rpc SelectUser(SelectUserRequest) returns (SelectUserResponse) {}
   rpc OperatePrivilege(OperatePrivilegeRequest) returns (common.Status) {}
   rpc SelectGrant(SelectGrantRequest) returns (SelectGrantResponse) {}
+
+  rpc CreateFunction(CreateFunctionRequest) returns (common.Status){}
 }
 
 message CreateAliasRequest {
@@ -1264,3 +1266,16 @@ extend google.protobuf.FileOptions {
 option (milvus_ext_obj) = {
   version: "2.1.0"
 };
+
+/**
+* Create function in milvus
+*/
+message CreateFunctionRequest {
+  common.MsgBase base = 1;
+  // The unique function name in milvus.(Required)
+  string function_name = 2;
+  // wat file after base64.(Required)
+  string wat_file = 3;
+  // list of function parameter types.(Required)
+  repeated schema.DataType arg_types = 4;
+}

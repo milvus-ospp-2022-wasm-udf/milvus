@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/milvus-io/milvus/api/schemapb"
 	"sync"
 
 	"github.com/milvus-io/milvus/internal/common"
@@ -113,15 +114,24 @@ type IMetaTable interface {
 	DropGrant(tenant string, role *milvuspb.RoleEntity) error
 	ListPolicy(tenant string) ([]string, error)
 	ListUserRole(tenant string) ([]string, error)
+
+	/* function */
+	CreateFunction(ctx context.Context, name string, watFile string, argTypes []schemapb.DataType, ts Timestamp) error
+}
+
+type FunctionBody struct {
+	watFile  string
+	argTypes []schemapb.DataType
 }
 
 type MetaTable struct {
 	ctx     context.Context
 	catalog metastore.RootCoordCatalog
 
-	collID2Meta  map[typeutil.UniqueID]*model.Collection // collection id -> collection meta
-	collName2ID  map[string]typeutil.UniqueID            // collection name to collection id
-	collAlias2ID map[string]typeutil.UniqueID            // collection alias to collection id
+	collID2Meta   map[typeutil.UniqueID]*model.Collection // collection id -> collection meta
+	collName2ID   map[string]typeutil.UniqueID            // collection name to collection id
+	collAlias2ID  map[string]typeutil.UniqueID            // collection alias to collection id
+	funcName2Body map[string]*FunctionBody                // function name to function body and params
 
 	ddLock         sync.RWMutex
 	permissionLock sync.RWMutex
@@ -145,6 +155,7 @@ func (mt *MetaTable) reload() error {
 	mt.collID2Meta = make(map[UniqueID]*model.Collection)
 	mt.collName2ID = make(map[string]UniqueID)
 	mt.collAlias2ID = make(map[string]UniqueID)
+	mt.funcName2Body = make(map[string]*FunctionBody)
 
 	// max ts means listing latest resources, meta table should always cache the latest version of catalog.
 	collections, err := mt.catalog.ListCollections(mt.ctx, typeutil.MaxTimestamp)
@@ -860,4 +871,26 @@ func (mt *MetaTable) ListUserRole(tenant string) ([]string, error) {
 	defer mt.permissionLock.RUnlock()
 
 	return mt.catalog.ListUserRole(mt.ctx, tenant)
+}
+
+func (mt *MetaTable) CreateFunction(ctx context.Context, funcName string, watFile string, argTypes []schemapb.DataType, ts Timestamp) error {
+	mt.ddLock.Lock()
+	defer mt.ddLock.Unlock()
+
+	if _, ok := mt.funcName2Body[funcName]; ok {
+		return fmt.Errorf("cannot create function, milvus already exists with same function name: %s", funcName)
+	}
+
+	// function didn't exist.
+	mt.funcName2Body[funcName] = &FunctionBody{
+		watFile:  watFile,
+		argTypes: argTypes,
+	}
+
+	//TODO: storage in etcd
+	log.Info("create function", zap.String("function Name", funcName), zap.String("wat file", watFile),
+		zap.String("function argTypes", string(argTypes)),
+		zap.Uint64("ts", ts))
+
+	return nil
 }

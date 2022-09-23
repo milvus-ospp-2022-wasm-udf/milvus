@@ -133,6 +133,15 @@ service RootCoord {
     rpc OperatePrivilege(milvus.OperatePrivilegeRequest) returns (common.Status) {}
     rpc SelectGrant(milvus.SelectGrantRequest) returns (milvus.SelectGrantResponse) {}
     rpc ListPolicy(internal.ListPolicyRequest) returns (internal.ListPolicyResponse) {}
+
+    /**
+    * @brief This method is used to create user defined function.
+    *
+    * @param CreateFunctionRequest, use to provide user defined function information to be created.
+    *
+    * @return Status
+    */
+    rpc CreateFunction(milvus.CreateFunctionRequest) returns (common.Status){}
 }
 
 message AllocTimestampRequest {

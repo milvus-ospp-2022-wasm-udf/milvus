@@ -2856,6 +2856,100 @@ func (node *Proxy) Query(ctx context.Context, request *milvuspb.QueryRequest) (*
 	return ret, nil
 }
 
+// CreateFunction create function, then you can use function in search.
+func (node *Proxy) CreateFunction(ctx context.Context, request *milvuspb.CreateFunctionRequest) (*commonpb.Status, error) {
+	if !node.checkHealthy() {
+		return unhealthyStatus(), nil
+	}
+
+	sp, ctx := trace.StartSpanFromContextWithOperationName(ctx, "Proxy-CreateFunction")
+	defer sp.Finish()
+	traceID, _, _ := trace.InfoFromSpan(sp)
+
+	cat := &CreateFunctionTask{
+		ctx:                   ctx,
+		Condition:             NewTaskCondition(ctx),
+		CreateFunctionRequest: request,
+		rootCoord:             node.rootCoord,
+	}
+
+	method := "CreateFunction"
+	tr := timerecord.NewTimeRecorder(method)
+	metrics.ProxyDDLFunctionCall.WithLabelValues(strconv.FormatInt(Params.ProxyCfg.GetNodeID(), 10), method, metrics.TotalLabel).Inc()
+
+	log.Debug(
+		rpcReceived(method),
+		zap.String("traceID", traceID),
+		zap.String("role", typeutil.ProxyRole),
+		zap.String("functionName", request.FunctionName),
+		zap.String("watBase64", request.WatFile),
+		zap.String("collection", string(request.GetArgTypes())))
+
+	if err := node.sched.ddQueue.Enqueue(cat); err != nil {
+		log.Warn(
+			rpcFailedToEnqueue(method),
+			zap.Error(err),
+			zap.String("traceID", traceID),
+			zap.String("role", typeutil.ProxyRole),
+			zap.String("functionName", request.FunctionName),
+			zap.String("watBase64", request.WatFile),
+			zap.String("collection", string(request.GetArgTypes())))
+
+		metrics.ProxyDDLFunctionCall.WithLabelValues(strconv.FormatInt(Params.ProxyCfg.GetNodeID(), 10), method, metrics.AbandonLabel).Inc()
+
+		return &commonpb.Status{
+			ErrorCode: commonpb.ErrorCode_UnexpectedError,
+			Reason:    err.Error(),
+		}, nil
+	}
+
+	log.Debug(
+		rpcEnqueued(method),
+		zap.String("traceID", traceID),
+		zap.String("role", typeutil.ProxyRole),
+		zap.Int64("MsgID", cat.ID()),
+		zap.Uint64("BeginTs", cat.BeginTs()),
+		zap.Uint64("EndTs", cat.EndTs()),
+		zap.String("functionName", request.FunctionName),
+		zap.String("watBase64", request.WatFile),
+		zap.String("collection", string(request.GetArgTypes())))
+
+	if err := cat.WaitToFinish(); err != nil {
+		log.Warn(
+			rpcFailedToWaitToFinish(method),
+			zap.Error(err),
+			zap.String("traceID", traceID),
+			zap.String("role", typeutil.ProxyRole),
+			zap.Int64("MsgID", cat.ID()),
+			zap.Uint64("BeginTs", cat.BeginTs()),
+			zap.Uint64("EndTs", cat.EndTs()),
+			zap.String("functionName", request.FunctionName),
+			zap.String("watBase64", request.WatFile),
+			zap.String("collection", string(request.GetArgTypes())))
+		metrics.ProxyDDLFunctionCall.WithLabelValues(strconv.FormatInt(Params.ProxyCfg.GetNodeID(), 10), method, metrics.FailLabel).Inc()
+
+		return &commonpb.Status{
+			ErrorCode: commonpb.ErrorCode_UnexpectedError,
+			Reason:    err.Error(),
+		}, nil
+	}
+
+	log.Debug(
+		rpcDone(method),
+		zap.String("traceID", traceID),
+		zap.String("role", typeutil.ProxyRole),
+		zap.Int64("MsgID", cat.ID()),
+		zap.Uint64("BeginTs", cat.BeginTs()),
+		zap.Uint64("EndTs", cat.EndTs()),
+		zap.String("functionName", request.FunctionName),
+		zap.String("watBase64", request.WatFile),
+		zap.String("collection", string(request.GetArgTypes())))
+
+	metrics.ProxyDDLFunctionCall.WithLabelValues(strconv.FormatInt(Params.ProxyCfg.GetNodeID(), 10), method, metrics.SuccessLabel).Inc()
+	metrics.ProxyDDLReqLatency.WithLabelValues(strconv.FormatInt(Params.ProxyCfg.GetNodeID(), 10), method).Observe(float64(tr.ElapseSpan().Milliseconds()))
+	return cat.result, nil
+}
+
 // CreateAlias create alias for collection, then you can search the collection with alias.
 func (node *Proxy) CreateAlias(ctx context.Context, request *milvuspb.CreateAliasRequest) (*commonpb.Status, error) {
 	if !node.checkHealthy() {

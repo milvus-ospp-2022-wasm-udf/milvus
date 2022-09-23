@@ -1364,6 +1364,61 @@ func (c *Core) GetMetrics(ctx context.Context, in *milvuspb.GetMetricsRequest) (
 	}, nil
 }
 
+// CreateFunction create function
+func (c *Core) CreateFunction(ctx context.Context, in *milvuspb.CreateFunctionRequest) (*commonpb.Status, error) {
+	if code, ok := c.checkHealthy(); !ok {
+		return failStatus(commonpb.ErrorCode_UnexpectedError, "StateCode="+internalpb.StateCode_name[int32(code)]), nil
+	}
+	metrics.RootCoordDDLReqCounter.WithLabelValues("CreateFunction", metrics.TotalLabel).Inc()
+	tr := timerecord.NewTimeRecorder("CreateFunction")
+
+	log.Info("received request to create function", zap.String("role", typeutil.RootCoordRole),
+		zap.String("funcName", in.GetFunctionName()), zap.String("wat file", string(in.GetWatFile())),
+		zap.String("function arguments", string(in.GetArgTypes())),
+		zap.Int64("msgID", in.GetBase().GetMsgID()))
+
+	t := &createFunctionTask{
+		baseTaskV2: baseTaskV2{
+			ctx:  ctx,
+			core: c,
+			done: make(chan error, 1),
+		},
+		Req: in,
+	}
+
+	if err := c.scheduler.AddTask(t); err != nil {
+		log.Error("failed to enqueue request to create function", zap.String("role", typeutil.RootCoordRole),
+			zap.Error(err),
+			zap.String("funcName", in.GetFunctionName()), zap.String("wat file", string(in.GetWatFile())),
+			zap.String("function arguments", string(in.GetArgTypes())),
+			zap.Int64("msgID", in.GetBase().GetMsgID()))
+
+		metrics.RootCoordDDLReqCounter.WithLabelValues("CreateFunction", metrics.FailLabel).Inc()
+		return failStatus(commonpb.ErrorCode_UnexpectedError, err.Error()), nil
+	}
+
+	if err := t.WaitToFinish(); err != nil {
+		log.Error("failed to create function", zap.String("role", typeutil.RootCoordRole),
+			zap.Error(err),
+			zap.String("funcName", in.GetFunctionName()), zap.String("wat file", string(in.GetWatFile())),
+			zap.String("function arguments", string(in.GetArgTypes())),
+			zap.Int64("msgID", in.GetBase().GetMsgID()), zap.Uint64("ts", t.GetTs()))
+
+		metrics.RootCoordDDLReqCounter.WithLabelValues("CreateFunction", metrics.FailLabel).Inc()
+		return failStatus(commonpb.ErrorCode_UnexpectedError, err.Error()), nil
+	}
+
+	metrics.RootCoordDDLReqCounter.WithLabelValues("CreateFunction", metrics.SuccessLabel).Inc()
+	metrics.RootCoordDDLReqLatency.WithLabelValues("CreateFunction").Observe(float64(tr.ElapseSpan().Milliseconds()))
+
+	log.Info("done to create function", zap.String("role", typeutil.RootCoordRole),
+		zap.String("funcName", in.GetFunctionName()), zap.String("wat file", string(in.GetWatFile())),
+		zap.String("function arguments", string(in.GetArgTypes())),
+		zap.Int64("msgID", in.GetBase().GetMsgID()))
+
+	return succStatus(), nil
+}
+
 // CreateAlias create collection alias
 func (c *Core) CreateAlias(ctx context.Context, in *milvuspb.CreateAliasRequest) (*commonpb.Status, error) {
 	if code, ok := c.checkHealthy(); !ok {

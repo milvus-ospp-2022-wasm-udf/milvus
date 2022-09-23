@@ -732,6 +732,9 @@ type RootCoord interface {
 	OperatePrivilege(ctx context.Context, req *milvuspb.OperatePrivilegeRequest) (*commonpb.Status, error)
 	SelectGrant(ctx context.Context, req *milvuspb.SelectGrantRequest) (*milvuspb.SelectGrantResponse, error)
 	ListPolicy(ctx context.Context, in *internalpb.ListPolicyRequest) (*internalpb.ListPolicyResponse, error)
+
+	// CreateFunction create wasm-based function
+	CreateFunction(ctx context.Context, req *milvuspb.CreateFunctionRequest) (*commonpb.Status, error)
 }
 
 // RootCoordComponent is used by grpc server of RootCoord
@@ -1161,6 +1164,16 @@ type ProxyComponent interface {
 	// otherwise, the `ErrorCode` of `Status` will be `Error`, and the `Reason` of `Status` will record the fail cause.
 	// error is always nil
 	LoadBalance(ctx context.Context, request *milvuspb.LoadBalanceRequest) (*commonpb.Status, error)
+
+	// CreateAlias notifies Proxy to create alias for a collection
+	//
+	// ctx is the context to control request deadline and cancellation
+	// req contains the request params, including database name(reserved), collection name, alias
+	//
+	// The `ErrorCode` of `Status` is `Success` if create alias successfully;
+	// otherwise, the `ErrorCode` of `Status` will be `Error`, and the `Reason` of `Status` will record the fail cause.
+	// error is always nil
+	CreateFunction(ctx context.Context, request *milvuspb.CreateFunctionRequest) (*commonpb.Status, error)
 
 	// CreateAlias notifies Proxy to create alias for a collection
 	//
