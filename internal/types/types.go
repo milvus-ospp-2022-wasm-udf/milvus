@@ -733,8 +733,12 @@ type RootCoord interface {
 	SelectGrant(ctx context.Context, req *milvuspb.SelectGrantRequest) (*milvuspb.SelectGrantResponse, error)
 	ListPolicy(ctx context.Context, in *internalpb.ListPolicyRequest) (*internalpb.ListPolicyResponse, error)
 
-	// CreateFunction create wasm-based function
+	// CreateFunction create function
 	CreateFunction(ctx context.Context, req *milvuspb.CreateFunctionRequest) (*commonpb.Status, error)
+	// DropFunction drop function
+	DropFunction(ctx context.Context, request *milvuspb.DropFunctionRequest) (*commonpb.Status, error)
+	// GetFunctionInfo get function information by function name from root coordinator
+	GetFunctionInfo(ctx context.Context, request *rootcoordpb.GetFunctionInfoRequest) (*rootcoordpb.GetFunctionInfoResponse, error)
 }
 
 // RootCoordComponent is used by grpc server of RootCoord

@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/milvus-io/milvus/internal/proto/rootcoordpb"
 	"math"
 	"strconv"
 	"strings"
@@ -88,7 +89,9 @@ const (
 	CreateAliasTaskName             = "CreateAliasTask"
 	DropAliasTaskName               = "DropAliasTask"
 	AlterAliasTaskName              = "AlterAliasTask"
-	CreateFunctionTaskName          = "CreateFunctionTask"
+	CreateFunctionTaskName          = "createFunctionTask"
+	DropFunctionTaskName            = "DropFunctionTaskName"
+	GetFunctionInfoTaskName         = "GetFunctionInfoTaskName"
 
 	// minFloat32 minimum float.
 	minFloat32 = -1 * float32(math.MaxFloat32)
@@ -1340,7 +1343,7 @@ func (cit *createIndexTask) Execute(ctx context.Context) error {
 		Timestamp:    cit.BeginTs(),
 	}
 	cit.result, err = cit.indexCoord.CreateIndex(ctx, req)
-	//cit.result, err = cit.rootCoord.CreateIndex(ctx, cit.CreateIndexRequest)
+	//cit.result, err = cit.rc.CreateIndex(ctx, cit.CreateIndexRequest)
 	if err != nil {
 		return err
 	}
@@ -2747,8 +2750,8 @@ func (a *AlterAliasTask) PostExecute(ctx context.Context) error {
 	return nil
 }
 
-// CreateFunctionTask contains task information of CreateFunction
-type CreateFunctionTask struct {
+// createFunctionTask contains task information of CreateFunction
+type createFunctionTask struct {
 	Condition
 	*milvuspb.CreateFunctionRequest
 	ctx       context.Context
@@ -2756,56 +2759,197 @@ type CreateFunctionTask struct {
 	result    *commonpb.Status
 }
 
-func (c *CreateFunctionTask) TraceCtx() context.Context {
+func (c *createFunctionTask) TraceCtx() context.Context {
 	return c.ctx
 }
 
-func (c *CreateFunctionTask) ID() UniqueID {
+func (c *createFunctionTask) ID() UniqueID {
 	return c.Base.MsgID
 }
 
-func (c *CreateFunctionTask) SetID(uid UniqueID) {
+func (c *createFunctionTask) SetID(uid UniqueID) {
 	c.Base.MsgID = uid
 }
 
-func (c *CreateFunctionTask) Name() string {
+func (c *createFunctionTask) Name() string {
 	return CreateFunctionTaskName
 }
 
-func (c *CreateFunctionTask) Type() commonpb.MsgType {
+func (c *createFunctionTask) Type() commonpb.MsgType {
 	return c.Base.MsgType
 }
 
-func (c *CreateFunctionTask) BeginTs() Timestamp {
+func (c *createFunctionTask) BeginTs() Timestamp {
 	return c.Base.Timestamp
 }
 
-func (c *CreateFunctionTask) EndTs() Timestamp {
+func (c *createFunctionTask) EndTs() Timestamp {
 	return c.Base.Timestamp
 }
 
-func (c *CreateFunctionTask) SetTs(ts Timestamp) {
+func (c *createFunctionTask) SetTs(ts Timestamp) {
 	c.Base.Timestamp = ts
 }
 
-func (c *CreateFunctionTask) OnEnqueue() error {
+func (c *createFunctionTask) OnEnqueue() error {
 	c.Base = &commonpb.MsgBase{}
 	return nil
 }
 
-func (c *CreateFunctionTask) PreExecute(ctx context.Context) error {
+func (c *createFunctionTask) PreExecute(ctx context.Context) error {
 	c.Base.MsgType = commonpb.MsgType_CreateFunction
 	c.Base.SourceID = Params.ProxyCfg.GetNodeID()
 	return nil
 }
 
-func (c *CreateFunctionTask) Execute(ctx context.Context) error {
+func (c *createFunctionTask) Execute(ctx context.Context) error {
 	var err error
 	c.result, err = c.rootCoord.CreateFunction(ctx, c.CreateFunctionRequest)
 	return err
 }
 
-func (c *CreateFunctionTask) PostExecute(ctx context.Context) error {
+func (c *createFunctionTask) PostExecute(ctx context.Context) error {
 	//TODO implement me
+	return nil
+}
+
+// dropFunctionTask contains task information of DropFunction
+type dropFunctionTask struct {
+	Condition
+	*milvuspb.DropFunctionRequest
+	ctx       context.Context
+	rootCoord types.RootCoord
+	result    *commonpb.Status
+}
+
+// TraceCtx returns the context for trace
+func (d *dropFunctionTask) TraceCtx() context.Context {
+	return d.ctx
+}
+
+// ID returns the MsgID
+func (d *dropFunctionTask) ID() UniqueID {
+	return d.Base.MsgID
+}
+
+// SetID sets the MsgID
+func (d *dropFunctionTask) SetID(uid UniqueID) {
+	d.Base.MsgID = uid
+}
+
+// Name returns the name of the task
+func (d *dropFunctionTask) Name() string {
+	return DropFunctionTaskName
+}
+
+func (d *dropFunctionTask) Type() commonpb.MsgType {
+	return d.Base.MsgType
+}
+
+func (d *dropFunctionTask) BeginTs() Timestamp {
+	return d.Base.Timestamp
+}
+
+func (d *dropFunctionTask) EndTs() Timestamp {
+	return d.Base.Timestamp
+}
+
+func (d *dropFunctionTask) SetTs(ts Timestamp) {
+	d.Base.Timestamp = ts
+}
+
+func (d *dropFunctionTask) OnEnqueue() error {
+	d.Base = &commonpb.MsgBase{}
+	return nil
+}
+
+func (d *dropFunctionTask) PreExecute(ctx context.Context) error {
+	d.Base.MsgType = commonpb.MsgType_DropFunction
+	d.Base.SourceID = Params.ProxyCfg.GetNodeID()
+	return nil
+}
+
+func (d *dropFunctionTask) Execute(ctx context.Context) error {
+	var err error
+	d.result, err = d.rootCoord.DropFunction(ctx, d.DropFunctionRequest)
+	return err
+}
+
+func (d *dropFunctionTask) PostExecute(ctx context.Context) error {
+	return nil
+}
+
+type getFunctionInfoTask struct {
+	Condition
+	*rootcoordpb.GetFunctionInfoRequest
+	ctx       context.Context
+	rootCoord types.RootCoord
+	result    *rootcoordpb.GetFunctionInfoResponse
+}
+
+func (t *getFunctionInfoTask) TraceCtx() context.Context {
+	return t.ctx
+}
+
+func (t *getFunctionInfoTask) ID() UniqueID {
+	return t.Base.MsgID
+}
+
+func (t *getFunctionInfoTask) SetID(uid UniqueID) {
+	t.Base.MsgID = uid
+}
+
+func (t *getFunctionInfoTask) Name() string {
+	return GetFunctionInfoTaskName
+}
+
+func (t *getFunctionInfoTask) Type() commonpb.MsgType {
+	return t.Base.MsgType
+}
+
+func (t *getFunctionInfoTask) BeginTs() Timestamp {
+	return t.Base.Timestamp
+}
+
+func (t *getFunctionInfoTask) EndTs() Timestamp {
+	return t.Base.Timestamp
+}
+
+func (t *getFunctionInfoTask) SetTs(ts Timestamp) {
+	t.Base.Timestamp = ts
+}
+
+func (t *getFunctionInfoTask) OnEnqueue() error {
+	t.Base = &commonpb.MsgBase{}
+	return nil
+}
+
+func (t *getFunctionInfoTask) PreExecute(ctx context.Context) error {
+	t.Base.MsgType = commonpb.MsgType_GetFunctionInfo
+	t.Base.SourceID = Params.ProxyCfg.GetNodeID()
+	return nil
+}
+
+func (t *getFunctionInfoTask) Execute(ctx context.Context) error {
+	respFromRootCoord, err := t.rootCoord.GetFunctionInfo(ctx, t.GetFunctionInfoRequest)
+
+	if err != nil {
+		return err
+	}
+
+	if respFromRootCoord == nil {
+		return errors.New("failed to get function information")
+	}
+
+	if respFromRootCoord.Status.ErrorCode != commonpb.ErrorCode_Success {
+		return errors.New(respFromRootCoord.Status.Reason)
+	}
+
+	t.result = respFromRootCoord
+
+	return nil
+}
+
+func (t *getFunctionInfoTask) PostExecute(ctx context.Context) error {
 	return nil
 }

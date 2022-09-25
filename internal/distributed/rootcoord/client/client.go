@@ -665,3 +665,29 @@ func (c *Client) CreateFunction(ctx context.Context, req *milvuspb.CreateFunctio
 	}
 	return ret.(*commonpb.Status), err
 }
+
+func (c *Client) DropFunction(ctx context.Context, req *milvuspb.DropFunctionRequest) (*commonpb.Status, error) {
+	ret, err := c.grpcClient.ReCall(ctx, func(client interface{}) (interface{}, error) {
+		if !funcutil.CheckCtxValid(ctx) {
+			return nil, ctx.Err()
+		}
+		return client.(rootcoordpb.RootCoordClient).DropFunction(ctx, req)
+	})
+	if err != nil || ret == nil {
+		return nil, err
+	}
+	return ret.(*commonpb.Status), err
+}
+
+func (c *Client) GetFunctionInfo(ctx context.Context, req *rootcoordpb.GetFunctionInfoRequest) (*rootcoordpb.GetFunctionInfoResponse, error) {
+	ret, err := c.grpcClient.ReCall(ctx, func(client interface{}) (interface{}, error) {
+		if !funcutil.CheckCtxValid(ctx) {
+			return nil, ctx.Err()
+		}
+		return client.(rootcoordpb.RootCoordClient).GetFunctionInfo(ctx, req)
+	})
+	if err != nil || ret == nil {
+		return nil, err
+	}
+	return ret.(*rootcoordpb.GetFunctionInfoResponse), err
+}

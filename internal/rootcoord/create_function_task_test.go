@@ -31,10 +31,10 @@ func Test_createFunctionTask_Execute(t *testing.T) {
 		task := &createFunctionTask{
 			baseTaskV2: baseTaskV2{core: core},
 			Req: &milvuspb.CreateFunctionRequest{
-				Base:         &commonpb.MsgBase{MsgType: commonpb.MsgType_CreateFunction},
-				FunctionName: "test",
-				WatFile:      "test",
-				ArgTypes:     []schemapb.DataType{schemapb.DataType_Int64, schemapb.DataType_Int64},
+				Base:          &commonpb.MsgBase{MsgType: commonpb.MsgType_CreateFunction},
+				FunctionName:  "test",
+				WatBodyBase64: "test",
+				ArgTypes:      []schemapb.DataType{schemapb.DataType_Int64, schemapb.DataType_Int64},
 			},
 		}
 		err := task.Execute(context.Background())

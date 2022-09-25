@@ -112,7 +112,17 @@ type RootCoordMock struct {
 }
 
 func (coord *RootCoordMock) CreateFunction(ctx context.Context, req *milvuspb.CreateFunctionRequest) (*commonpb.Status, error) {
-	//TODO implement me
+	//TODO (ziyu wang) implement me
+	panic("implement me")
+}
+
+func (coord *RootCoordMock) DropFunction(ctx context.Context, req *milvuspb.DropFunctionRequest) (*commonpb.Status, error) {
+	//TODO (ziyu wang) implement me
+	panic("implement me")
+}
+
+func (coord *RootCoordMock) GetFunctionInfo(ctx context.Context, req *rootcoordpb.GetFunctionInfoRequest) (*rootcoordpb.GetFunctionInfoResponse, error) {
+	//TODO (ziyu wang) implement me
 	panic("implement me")
 }
 

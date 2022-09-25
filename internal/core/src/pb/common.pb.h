@@ -329,6 +329,8 @@ enum MsgType : int {
   GetRecoveryInfo = 602,
   GetSegmentState = 603,
   CreateFunction = 700,
+  DropFunction = 701,
+  GetFunctionInfo = 702,
   TimeTick = 1200,
   QueryNodeStats = 1201,
   LoadIndex = 1202,

@@ -201,6 +201,8 @@ enum MsgType {
 
     /* FUNCTION */
     CreateFunction = 700;
+    DropFunction = 701;
+    GetFunctionInfo = 702;
 
     /* SYSTEM CONTROL */
     TimeTick = 1200;
