@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(WASMTIME_VERSION "v1.0.0")
+set(WASMTIME_VERSION "v0.40.1")
 set(WASMTIME_GIT_URL "git@github.com:bytecodealliance/wasmtime.git")
 set(WASMTIME_GIT_TAG "v0.40.1")
 
